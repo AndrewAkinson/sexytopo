@@ -46,6 +46,7 @@ public class SurveyJsonTranslater {
     public static final String AZIMUTH_TAG = "azimuth";
     public static final String INCLINATION_TAG = "inclination";
     public static final String PROMOTED_FROM_TAG = "promotedFrom";
+    public static final String BACKSIGHT_PROMOTED_FROM_TAG = "backsightPromotedFrom";
     public static final String DESTINATION_TAG = "destination";
     public static final String WAS_SHOT_BACKWARDS_TAG = "wasShotBackwards";
     public static final String INDEX_TAG = "index";
@@ -272,6 +273,12 @@ public class SurveyJsonTranslater {
         }
         json.put(PROMOTED_FROM_TAG, promotedFromArray);
 
+        JSONArray backsightPromotedFromArray = new JSONArray();
+        for (Leg backsightLeg : leg.getBacksightPromotedFrom()) {
+            backsightPromotedFromArray.put(toJson(backsightLeg, null));
+        }
+        json.put(BACKSIGHT_PROMOTED_FROM_TAG, backsightPromotedFromArray);
+
         return json;
     }
 
@@ -369,9 +376,21 @@ public class SurveyJsonTranslater {
             }
             Leg[] promotedFrom = promotedFromList.toArray(new Leg[]{});
 
+            List<Leg> backsightPromotedFromList = new ArrayList<>();
+            try {
+                JSONArray array = json.getJSONArray(BACKSIGHT_PROMOTED_FROM_TAG);
+                for (JSONObject object : IoUtils.toList(array)) {
+                    Leg backsightLeg = toLeg(namesToStations, object);
+                    backsightPromotedFromList.add(backsightLeg);
+                }
+            } catch (Exception ignore) {
+                // backwards compatibility: older files won't have this field
+            }
+            Leg[] backsightPromotedFrom = backsightPromotedFromList.toArray(new Leg[]{});
+
             Station destination = namesToStations.get(destinationName);
             leg = new Leg(distance, azimuth, inclination,
-                    destination, promotedFrom, wasShotBackwards);
+                    destination, promotedFrom, backsightPromotedFrom, wasShotBackwards);
         }
 
         return leg;

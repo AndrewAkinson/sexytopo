@@ -20,6 +20,7 @@ public class Leg extends SurveyComponent {
     private final float inclination;
     private final Station destination;
     private final Leg[] promotedFrom;
+    private final Leg[] backsightPromotedFrom;  // confirmation shots in the opposite direction
     private final boolean wasShotBackwards;
 
     private final static Leg[] NO_LEGS = new Leg[]{};
@@ -36,7 +37,7 @@ public class Leg extends SurveyComponent {
                float azimuth,
                float inclination,
                boolean wasShotBackwards) {
-        this(distance, azimuth, inclination, Survey.NULL_STATION, NO_LEGS, wasShotBackwards);
+        this(distance, azimuth, inclination, Survey.NULL_STATION, NO_LEGS, NO_LEGS, wasShotBackwards);
     }
 
     public Leg(float distance,
@@ -44,7 +45,7 @@ public class Leg extends SurveyComponent {
                float inclination,
                Station destination,
                Leg[] promotedFrom) {
-        this(distance, azimuth, inclination, destination, promotedFrom, false);
+        this(distance, azimuth, inclination, destination, promotedFrom, NO_LEGS, false);
     }
 
     public Leg(float distance,
@@ -52,6 +53,16 @@ public class Leg extends SurveyComponent {
                float inclination,
                Station destination,
                Leg[] promotedFrom,
+               boolean wasShotBackwards) {
+        this(distance, azimuth, inclination, destination, promotedFrom, NO_LEGS, wasShotBackwards);
+    }
+
+    public Leg(float distance,
+               float azimuth,
+               float inclination,
+               Station destination,
+               Leg[] promotedFrom,
+               Leg[] backsightPromotedFrom,
                boolean wasShotBackwards) {
 
         if (destination == null) {
@@ -77,13 +88,14 @@ public class Leg extends SurveyComponent {
         this.inclination = inclination;
         this.destination = destination;
         this.promotedFrom = promotedFrom;
+        this.backsightPromotedFrom = backsightPromotedFrom;
         this.wasShotBackwards = wasShotBackwards;
 
     }
 
     public Leg(Leg leg, Station destination) {
         this(leg.distance, leg.azimuth, leg.inclination, destination,
-                leg.promotedFrom, leg.wasShotBackwards);
+                leg.promotedFrom, leg.backsightPromotedFrom, leg.wasShotBackwards);
     }
 
     public static Leg toFullLeg(Leg splay, Station destination) {
@@ -94,9 +106,16 @@ public class Leg extends SurveyComponent {
             Leg splay, Station destination, Leg[] promotedFrom) {
         Leg leg = new Leg(
                 splay.distance, splay.azimuth, splay.inclination,
-                destination, promotedFrom, splay.wasShotBackwards);
+                destination, promotedFrom, NO_LEGS, splay.wasShotBackwards);
         return leg;
+    }
 
+    public static Leg upgradeSplayToConnectedLeg(
+            Leg splay, Station destination, Leg[] promotedFrom, Leg[] backsightPromotedFrom) {
+        Leg leg = new Leg(
+                splay.distance, splay.azimuth, splay.inclination,
+                destination, promotedFrom, backsightPromotedFrom, splay.wasShotBackwards);
+        return leg;
     }
 
     public Leg reverse() {
@@ -104,7 +123,7 @@ public class Leg extends SurveyComponent {
         if (hasDestination()) {
             Leg leg = new Leg(
                     distance, adjustedAzimuth, -1 * inclination, destination,
-                    promotedFrom, !wasShotBackwards);
+                    promotedFrom, backsightPromotedFrom, !wasShotBackwards);
             return leg;
         } else {
             return new Leg(distance, adjustedAzimuth, -1 * inclination, !wasShotBackwards);
@@ -166,6 +185,14 @@ public class Leg extends SurveyComponent {
 
     public boolean wasPromoted() {
         return promotedFrom.length > 0;
+    }
+
+    public Leg[] getBacksightPromotedFrom() {
+        return backsightPromotedFrom;
+    }
+
+    public boolean hasBacksightShots() {
+        return backsightPromotedFrom.length > 0;
     }
 
     public boolean wasShotBackwards() {

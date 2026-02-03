@@ -37,6 +37,228 @@ public class SurveyUpdaterTest {
     }
 
     @Test
+    public void testFourthShotIncorporatedIntoPromotedLeg() {
+        Survey survey = new Survey();
+        // First three shots create a promoted leg (all pointing north)
+        Leg leg1 = new Leg(5, 0, 0);
+        Leg leg2 = new Leg(5, 0.001f, 0);
+        Leg leg3 = new Leg(5, 0, 0.001f);
+        SurveyUpdater.update(survey, leg1);
+        SurveyUpdater.update(survey, leg2);
+        SurveyUpdater.update(survey, leg3);
+
+        Assert.assertEquals(2, survey.getAllStations().size());
+        Station newStation = survey.getActiveStation();
+        Leg promotedLeg = survey.getReferringLeg(newStation);
+        Assert.assertNotNull(promotedLeg);
+        Assert.assertTrue(promotedLeg.wasPromoted());
+        Assert.assertEquals(3, promotedLeg.getPromotedFrom().length);
+
+        // Fourth shot in the same direction as the original three
+        Leg leg4 = new Leg(5, 0, 0); // same direction
+        SurveyUpdater.update(survey, leg4);
+
+        // Should still be 2 stations (no new station created)
+        Assert.assertEquals(2, survey.getAllStations().size());
+        // The fourth shot should be incorporated into the leg
+        Leg updatedLeg = survey.getReferringLeg(newStation);
+        Assert.assertEquals(4, updatedLeg.getPromotedFrom().length);
+        // No splays should be at the new station
+        Assert.assertEquals(0, newStation.getOnwardLegs().size());
+    }
+
+    @Test
+    public void testFifthShotAlsoIncorporated() {
+        Survey survey = new Survey();
+        // First three shots create a promoted leg
+        SurveyUpdater.update(survey, new Leg(5, 0, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0.001f, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0, 0.001f));
+
+        Station newStation = survey.getActiveStation();
+
+        // Fourth and fifth shots in the same direction
+        SurveyUpdater.update(survey, new Leg(5, 0, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0, 0.001f));
+
+        Assert.assertEquals(2, survey.getAllStations().size());
+        Leg updatedLeg = survey.getReferringLeg(newStation);
+        Assert.assertEquals(5, updatedLeg.getPromotedFrom().length);
+        Assert.assertEquals(0, newStation.getOnwardLegs().size());
+    }
+
+    @Test
+    public void testNonMatchingShotBecomesNormalSplay() {
+        Survey survey = new Survey();
+        // First three shots create a promoted leg going north
+        SurveyUpdater.update(survey, new Leg(5, 0, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0.001f, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0, 0.001f));
+
+        Station newStation = survey.getActiveStation();
+
+        // Fourth shot in completely different direction (a splay)
+        Leg splay = new Leg(3, 90, 0); // pointing east
+        SurveyUpdater.update(survey, splay);
+
+        // Should still be 2 stations
+        Assert.assertEquals(2, survey.getAllStations().size());
+        // The promoted leg should still have only 3 shots
+        Leg promotedLeg = survey.getReferringLeg(newStation);
+        Assert.assertEquals(3, promotedLeg.getPromotedFrom().length);
+        // The new shot should be a splay at the new station
+        Assert.assertEquals(1, newStation.getOnwardLegs().size());
+    }
+
+    @Test
+    public void testFourthBacksightIncorporatedIntoPromotedLeg() {
+        Survey survey = new Survey();
+        // First three backsights create a promoted leg (all pointing south, i.e., back to origin)
+        SurveyUpdater.update(survey, new Leg(5, 180, 0), InputMode.BACKWARD);
+        SurveyUpdater.update(survey, new Leg(5, 180, 0.001f), InputMode.BACKWARD);
+        SurveyUpdater.update(survey, new Leg(5, 180.001f, 0), InputMode.BACKWARD);
+
+        Assert.assertEquals(2, survey.getAllStations().size());
+        Station newStation = survey.getActiveStation();
+        Leg promotedLeg = survey.getReferringLeg(newStation);
+        Assert.assertTrue(promotedLeg.wasPromoted());
+        Assert.assertEquals(3, promotedLeg.getPromotedFrom().length);
+        // The leg should be reversed (pointing north, azimuth ~0)
+        Assert.assertEquals(0, promotedLeg.getAzimuth(), 1.0f);
+
+        // Fourth backsight in the same direction as the original three
+        SurveyUpdater.update(survey, new Leg(5, 180, 0), InputMode.BACKWARD);
+
+        // Should still be 2 stations
+        Assert.assertEquals(2, survey.getAllStations().size());
+        // The fourth shot should be incorporated
+        Leg updatedLeg = survey.getReferringLeg(newStation);
+        Assert.assertEquals(4, updatedLeg.getPromotedFrom().length);
+        // No splays at the new station
+        Assert.assertEquals(0, newStation.getOnwardLegs().size());
+    }
+
+    @Test
+    public void testSingleBacksightStoredOnLeg() {
+        Survey survey = new Survey();
+        // Three foresights create leg 1→2 (pointing north)
+        SurveyUpdater.update(survey, new Leg(5, 0, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0.001f, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0, 0.001f));
+
+        Assert.assertEquals(2, survey.getAllStations().size());
+        Station station2 = survey.getActiveStation();
+
+        // One backsight (pointing south, back to station 1)
+        SurveyUpdater.update(survey, new Leg(5, 180, 0));
+
+        // Should still be 2 stations
+        Assert.assertEquals(2, survey.getAllStations().size());
+        // Station 2 should have no onward legs (backsight is stored on the referring leg)
+        Assert.assertEquals(0, station2.getOnwardLegs().size());
+        // The referring leg should have 1 backsight shot
+        Leg referringLeg = survey.getReferringLeg(station2);
+        Assert.assertTrue(referringLeg.hasBacksightShots());
+        Assert.assertEquals(1, referringLeg.getBacksightPromotedFrom().length);
+    }
+
+    @Test
+    public void testMultipleBacksightsStoredOnLeg() {
+        Survey survey = new Survey();
+        // Three foresights create leg 1→2
+        SurveyUpdater.update(survey, new Leg(5, 0, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0.001f, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0, 0.001f));
+
+        Station station2 = survey.getActiveStation();
+
+        // Three backsights
+        SurveyUpdater.update(survey, new Leg(5, 180, 0));
+        SurveyUpdater.update(survey, new Leg(5, 180, 0.001f));
+        SurveyUpdater.update(survey, new Leg(5, 180.001f, 0));
+
+        Assert.assertEquals(2, survey.getAllStations().size());
+        Assert.assertEquals(0, station2.getOnwardLegs().size());
+        // All three backsights should be stored on the referring leg
+        Leg referringLeg = survey.getReferringLeg(station2);
+        Assert.assertEquals(3, referringLeg.getBacksightPromotedFrom().length);
+    }
+
+    @Test
+    public void testForesightAfterBacksightBecomesSplay() {
+        Survey survey = new Survey();
+        // Three foresights create leg 1→2
+        SurveyUpdater.update(survey, new Leg(5, 0, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0.001f, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0, 0.001f));
+
+        Station station2 = survey.getActiveStation();
+        Leg originalLeg = survey.getReferringLeg(station2);
+        int originalShotCount = originalLeg.getPromotedFrom().length;
+
+        // One backsight
+        SurveyUpdater.update(survey, new Leg(5, 180, 0));
+
+        // Now a foresight comes in (should become a splay, not incorporated)
+        SurveyUpdater.update(survey, new Leg(5, 0, 0));
+
+        // Original leg should still have same number of foresight shots
+        Leg updatedLeg = survey.getReferringLeg(station2);
+        Assert.assertEquals(originalShotCount, updatedLeg.getPromotedFrom().length);
+
+        // Station 2 should have only the splay (backsight is on referring leg)
+        Assert.assertEquals(1, station2.getOnwardLegs().size());
+    }
+
+    @Test
+    public void testThreeForesightsThenThreeBacksights() {
+        Survey survey = new Survey();
+        // Three foresights create leg 1→2
+        SurveyUpdater.update(survey, new Leg(5, 0, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0.001f, 0));
+        SurveyUpdater.update(survey, new Leg(5, 0, 0.001f));
+
+        Station station2 = survey.getActiveStation();
+
+        // Three backsights
+        SurveyUpdater.update(survey, new Leg(5, 180, 0));
+        SurveyUpdater.update(survey, new Leg(5, 180, 0.001f));
+        SurveyUpdater.update(survey, new Leg(5, 180.001f, 0));
+
+        // Should still be exactly 2 stations
+        Assert.assertEquals(2, survey.getAllStations().size());
+        // Station 2 should have no onward legs
+        Assert.assertEquals(0, station2.getOnwardLegs().size());
+        // The referring leg should have both foresight and backsight shots
+        Leg leg = survey.getReferringLeg(station2);
+        Assert.assertEquals(3, leg.getPromotedFrom().length);
+        Assert.assertEquals(3, leg.getBacksightPromotedFrom().length);
+    }
+
+    @Test
+    public void testThreeBacksightsThenThreeForesights() {
+        Survey survey = new Survey();
+        // Three backsights create leg 1→2 (shots at 180°, leg reversed to 0°)
+        SurveyUpdater.update(survey, new Leg(5, 180, 0), InputMode.BACKWARD);
+        SurveyUpdater.update(survey, new Leg(5, 180, 0.001f), InputMode.BACKWARD);
+        SurveyUpdater.update(survey, new Leg(5, 180.001f, 0), InputMode.BACKWARD);
+
+        Station station2 = survey.getActiveStation();
+
+        // Three foresights (at 0°, which is opposite to the original 180° shots)
+        SurveyUpdater.update(survey, new Leg(5, 0, 0), InputMode.BACKWARD);
+        SurveyUpdater.update(survey, new Leg(5, 0, 0.001f), InputMode.BACKWARD);
+        SurveyUpdater.update(survey, new Leg(5, 0.001f, 0), InputMode.BACKWARD);
+
+        Assert.assertEquals(2, survey.getAllStations().size());
+        Assert.assertEquals(0, station2.getOnwardLegs().size());
+        // The referring leg should have 3 original shots and 3 backsight shots
+        Leg leg = survey.getReferringLeg(station2);
+        Assert.assertEquals(3, leg.getPromotedFrom().length);
+        Assert.assertEquals(3, leg.getBacksightPromotedFrom().length);
+    }
+
+    @Test
     public void testEditLegWorks() {
         Leg leg = new Leg(5, 0, 0);
         Survey survey = new Survey();
@@ -377,7 +599,6 @@ public class SurveyUpdaterTest {
         Leg leg = new Leg(5, 90, 10);
         SurveyUpdater.updateWithNewStation(survey, leg);
 
-        Station origin = survey.getOrigin();
         Station station1 = survey.getActiveStation();
         int originalLegCount = survey.getAllLegs().size();
 

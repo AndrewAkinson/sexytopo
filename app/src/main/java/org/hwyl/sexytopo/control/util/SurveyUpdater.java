@@ -9,6 +9,7 @@ import org.hwyl.sexytopo.model.survey.Leg;
 import org.hwyl.sexytopo.model.survey.Station;
 import org.hwyl.sexytopo.model.survey.Survey;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,6 +40,12 @@ public class SurveyUpdater {
 
     public static synchronized boolean update(Survey survey, Leg leg, InputMode inputMode) {
         Station activeStation = survey.getActiveStation();
+
+        // Check if this shot should be incorporated into an existing promoted leg
+        // (i.e., a 4th, 5th, etc. shot that matches the already-promoted leg)
+        if (tryIncorporateIntoExistingLeg(survey, activeStation, leg, inputMode)) {
+            return false; // no new station created, but shot was incorporated
+        }
 
         Log.i(R.string.survey_update_adding_leg, leg);
         activeStation.getOnwardLegs().add(leg);
@@ -151,6 +158,121 @@ public class SurveyUpdater {
         }
 
         return false;
+    }
+
+
+    private static boolean tryIncorporateIntoExistingLeg(
+            Survey survey, Station activeStation, Leg newLeg, InputMode inputMode) {
+        // Handle shots that match a promoted leg (same direction) or its backsight
+        // (opposite direction). After a leg is promoted (e.g., 4→5), additional shots in the
+        // same direction are incorporated. If a shot in the opposite direction comes in,
+        // it's stored as a backsight shot on the same leg. Once backsight shots exist,
+        // original-direction shots become normal splays.
+
+        if (inputMode == InputMode.CALIBRATION_CHECK) {
+            return false;
+        }
+
+        // Get the leg that connects to this station (the "referring" leg)
+        Leg referringLeg = survey.getReferringLeg(activeStation);
+        if (referringLeg == null || !referringLeg.wasPromoted()) {
+            return false;
+        }
+
+        // Get the original shots that made up the promoted leg
+        Leg[] originalShots = referringLeg.getPromotedFrom();
+        if (originalShots.length == 0) {
+            return false;
+        }
+
+        // Check if the new shot matches the original direction
+        boolean matchesOriginal = areLegsAboutTheSame(
+                Arrays.asList(originalShots[0], newLeg));
+
+        // Check if the new shot matches the opposite direction (backsight direction)
+        boolean matchesBacksight = areLegsAboutTheSame(
+                Arrays.asList(originalShots[0].asBacksight(), newLeg));
+
+        if (referringLeg.hasBacksightShots()) {
+            // Backsight shots exist - only incorporate shots matching that direction
+            if (matchesBacksight) {
+                addBacksightToReferringLeg(survey, activeStation, referringLeg, newLeg, inputMode);
+                return true;
+            }
+            // Original direction shots become normal splays (return false)
+            return false;
+        }
+
+        // No backsight shots yet
+        if (matchesOriginal) {
+            // Same direction as original - incorporate into referring leg
+            incorporateIntoReferringLeg(survey, activeStation, referringLeg,
+                    originalShots, newLeg, inputMode);
+            return true;
+        }
+
+        if (matchesBacksight) {
+            // Opposite direction - add as first backsight shot
+            addBacksightToReferringLeg(survey, activeStation, referringLeg, newLeg, inputMode);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void incorporateIntoReferringLeg(
+            Survey survey, Station activeStation, Leg referringLeg,
+            Leg[] originalShots, Leg newLeg, InputMode inputMode) {
+        List<Leg> allShots = new ArrayList<>(Arrays.asList(originalShots));
+        allShots.add(newLeg);
+
+        Leg averagedLeg = averageLegs(allShots);
+        Leg updatedLeg = Leg.upgradeSplayToConnectedLeg(
+                averagedLeg, activeStation, 
+                allShots.toArray(new Leg[]{}),
+                referringLeg.getBacksightPromotedFrom());
+
+        if (inputMode == InputMode.BACKWARD) {
+            updatedLeg = updatedLeg.reverse();
+        }
+
+        Station originatingStation = survey.getOriginatingStation(referringLeg);
+        originatingStation.getOnwardLegs().remove(referringLeg);
+        originatingStation.getOnwardLegs().add(updatedLeg);
+
+        survey.removeLegRecord(referringLeg);
+        survey.addLegRecord(updatedLeg);
+        survey.setSaved(false);
+
+        Log.i(R.string.survey_update_adding_leg, newLeg);
+    }
+
+    private static void addBacksightToReferringLeg(
+            Survey survey, Station activeStation, Leg referringLeg,
+            Leg newLeg, InputMode inputMode) {
+        // Add the new shot to the backsight shots
+        List<Leg> backsightShots = new ArrayList<>(
+                Arrays.asList(referringLeg.getBacksightPromotedFrom()));
+        backsightShots.add(newLeg);
+
+        Leg updatedLeg = Leg.upgradeSplayToConnectedLeg(
+                referringLeg.toSplay(), activeStation,
+                referringLeg.getPromotedFrom(),
+                backsightShots.toArray(new Leg[]{}));
+
+        if (inputMode == InputMode.BACKWARD) {
+            updatedLeg = updatedLeg.reverse();
+        }
+
+        Station originatingStation = survey.getOriginatingStation(referringLeg);
+        originatingStation.getOnwardLegs().remove(referringLeg);
+        originatingStation.getOnwardLegs().add(updatedLeg);
+
+        survey.removeLegRecord(referringLeg);
+        survey.addLegRecord(updatedLeg);
+        survey.setSaved(false);
+
+        Log.i(R.string.survey_update_adding_leg, newLeg);
     }
 
 

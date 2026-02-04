@@ -245,5 +245,20 @@ public class GeneralPreferences {
         return getBoolean("pref_therion_export_text", true);
     }
 
+    public static final String DEFAULT_THCONFIG_NAME = "<surveyname>.thconfig";
+
+    public static String getTherionThconfigName() {
+        return getString("pref_therion_thconfig_name", DEFAULT_THCONFIG_NAME);
+    }
+
+    public static String getTherionThconfigTemplate() {
+        return getString("pref_therion_thconfig_template", "");
+    }
+
+    public static void setTherionThconfigTemplate(String template) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("pref_therion_thconfig_template", template);
+        editor.apply();
+    }
 
 }

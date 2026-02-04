@@ -3,6 +3,8 @@ package org.hwyl.sexytopo.control.io.thirdparty.therion;
 import android.content.Context;
 
 import org.hwyl.sexytopo.R;
+import org.hwyl.sexytopo.control.io.IoUtils;
+import org.hwyl.sexytopo.control.io.SurveyDirectory;
 import org.hwyl.sexytopo.control.io.SurveyFile;
 import org.hwyl.sexytopo.control.io.basic.ExportFrameFactory;
 import org.hwyl.sexytopo.control.io.thirdparty.xvi.XviExporter;
@@ -16,6 +18,8 @@ import org.hwyl.sexytopo.model.graph.Space;
 import org.hwyl.sexytopo.model.sketch.Sketch;
 import org.hwyl.sexytopo.model.survey.Survey;
 
+import androidx.documentfile.provider.DocumentFile;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +28,6 @@ import java.util.List;
 public class TherionExporter extends Exporter {
 
     public static final char COMMENT_CHAR = '#';
-    private static final SurveyFile.SurveyFileType THCONFIG =
-            new SurveyFile.SurveyFileType("thconfig", "plain/text");
     private static final SurveyFile.SurveyFileType TH =
             new SurveyFile.SurveyFileType("th", "plain/text");
     private static final SurveyFile.SurveyFileType TH2_PLAN =
@@ -54,8 +56,7 @@ public class TherionExporter extends Exporter {
         readOriginalFilesIfPresent(context, survey);
 
         String thconfigContent = ThconfigExporter.getContent(survey);
-        SurveyFile thconfig = getOutputFile(THCONFIG);
-        thconfig.save(context, attribution + thconfigContent);
+        saveThconfigFile(context, survey, attribution + thconfigContent);
 
         SurveyFile th2_plan_file = getOutputFile(TH2_PLAN);
         SurveyFile xvi_plan_file = getOutputFile(XVI_PLAN);
@@ -179,6 +180,26 @@ public class TherionExporter extends Exporter {
 
     private String getFileAttribution(Context context) {
         return COMMENT_CHAR + " " + TextTools.getFileAttribution(context) + "\n\n";
+    }
+
+    private void saveThconfigFile(Context context, Survey survey, String content)
+            throws IOException {
+        SurveyDirectory parent = getParentExportDirectory();
+        SurveyDirectory directory = getExportDirectory(parent);
+        directory.ensureExists(context);
+
+        String filename = ThconfigExporter.getThconfigFilename(survey.getName());
+        DocumentFile directoryDocFile = directory.getDocumentFile(context);
+        DocumentFile existingFile = directoryDocFile.findFile(filename);
+        DocumentFile documentFile;
+        if (existingFile != null) {
+            documentFile = existingFile;
+        } else {
+            documentFile = directoryDocFile.createFile("application/octet-stream", filename);
+        }
+        if (documentFile != null) {
+            IoUtils.saveToFile(context, documentFile, content);
+        }
     }
 
 }

@@ -4,8 +4,6 @@ import android.content.Context;
 import android.util.Log;
 import android.util.Xml;
 
-import com.google.android.material.tabs.TabLayout;
-
 import org.hwyl.sexytopo.R;
 import org.hwyl.sexytopo.control.io.basic.ExportFrameFactory;
 import org.hwyl.sexytopo.control.io.translation.DoubleSketchFileExporter;
@@ -113,12 +111,12 @@ public class SvgExporter extends DoubleSketchFileExporter {
 
         xmlSerializer.startTag("", "g");
         xmlSerializer.attribute("", "id", "centreline");
-        writeSurveyData(xmlSerializer, projection, SCALE, true);
+        writeCentrelineData(xmlSerializer, projection, SCALE);
         xmlSerializer.endTag("", "g");
 
         xmlSerializer.startTag("", "g");
         xmlSerializer.attribute("", "id", "splays");
-        writeSurveyData(xmlSerializer, projection, SCALE, false);
+        writeSplayData(xmlSerializer, projection, SCALE);
         xmlSerializer.endTag("", "g");
 
         xmlSerializer.endTag("", "g");
@@ -251,46 +249,71 @@ public class SvgExporter extends DoubleSketchFileExporter {
 
     }
 
-     private static void writeSurveyData(XmlSerializer xmlSerializer, Space<Coord2D> projection, int scale, boolean centreline)
+    private static void writeCentrelineData(XmlSerializer xmlSerializer, Space<Coord2D> projection, int scale)
             throws IOException {
         Map<Station, Coord2D> stationMap = projection.getStationMap();
         Map<Leg, Line<Coord2D>> legMap = projection.getLegMap();
         Integer legStrokeWidth = GeneralPreferences.getExportSvgLegStrokeWidth();
-        Integer splayStrokeWidth = GeneralPreferences.getExportSvgSplayStrokeWidth();
+
         for (Station station : stationMap.keySet()) {
-            Coord2D station2d=stationMap.get(station);
-            Integer splayc=0;
-            if (centreline) {
-                xmlSerializer.startTag("", "text");
-                xmlSerializer.attribute("", "id", station.getName());
-                xmlSerializer.attribute("", "x", String.format("%.5f", scale * station2d.x));
-                xmlSerializer.attribute("", "y", String.format("%.5f", scale * station2d.y));
-                xmlSerializer.attribute("", "font-size", String.format("%d", STATION_FONT));
-                xmlSerializer.attribute("", "stroke", "black");
-                xmlSerializer.text(station.getName());
-                xmlSerializer.endTag("", "text");
-            }
-            for (Leg leg : legMap.keySet()) {
-                Line<Coord2D> line = legMap.get(leg);
-                if (station2d.equals(line.getStart()) && centreline == leg.hasDestination()) {
-                    xmlSerializer.startTag("", "polyline");
-                    if (leg.hasDestination()) {
-                        Station destination = leg.getDestination();
-                        xmlSerializer.attribute("", "id", station.getName() + "-" + destination.getName());
-                    } else {
-                        xmlSerializer.attribute("", "id", String.format("%s-Splay%d", station.getName(), splayc++));
-                    }
-                    String pointsString = TextTools.join(
-                            ",", scale * line.getStart().x, scale * line.getStart().y, scale * line.getEnd().x, scale * line.getEnd().y);
-                    xmlSerializer.attribute("", "points", pointsString);
-                    xmlSerializer.attribute("", "stroke", "red");
-                    Integer strokeWidth = leg.hasDestination() ? legStrokeWidth : splayStrokeWidth;
-                    xmlSerializer.attribute("", "stroke-width", strokeWidth.toString());
-                    xmlSerializer.attribute("", "fill", "none");
-                    xmlSerializer.endTag("", "polyline");
+            for (Leg leg : station.getOnwardLegs()) {
+                if (leg.hasDestination()) {
+                    Line<Coord2D> line = legMap.get(leg);
+                    Station destination = leg.getDestination();
+                    String legId = station.getName() + "-" + destination.getName();
+                    writeLeg(xmlSerializer, line, legId, scale, legStrokeWidth);
                 }
             }
         }
+
+        for (Station station : stationMap.keySet()) {
+            Coord2D station2d = stationMap.get(station);
+            writeStation(xmlSerializer, station, station2d, scale);
+        }
+    }
+
+    private static void writeSplayData(XmlSerializer xmlSerializer, Space<Coord2D> projection, int scale)
+            throws IOException {
+        Map<Station, Coord2D> stationMap = projection.getStationMap();
+        Map<Leg, Line<Coord2D>> legMap = projection.getLegMap();
+        Integer splayStrokeWidth = GeneralPreferences.getExportSvgSplayStrokeWidth();
+
+        for (Station station : stationMap.keySet()) {
+            int splayCount = 0;
+            for (Leg leg : station.getOnwardLegs()) {
+                if (!leg.hasDestination()) {
+                    Line<Coord2D> line = legMap.get(leg);
+                    String splayId = String.format("%s-Splay%d", station.getName(), splayCount);
+                    writeLeg(xmlSerializer, line, splayId, scale, splayStrokeWidth);
+                    splayCount++;
+                }
+            }
+        }
+    }
+
+    private static void writeLeg(XmlSerializer xmlSerializer, Line<Coord2D> line, String id, int scale, Integer strokeWidth)
+            throws IOException {
+        xmlSerializer.startTag("", "polyline");
+        xmlSerializer.attribute("", "id", id);
+        String pointsString = TextTools.join(
+                ",", scale * line.getStart().x, scale * line.getStart().y, scale * line.getEnd().x, scale * line.getEnd().y);
+        xmlSerializer.attribute("", "points", pointsString);
+        xmlSerializer.attribute("", "stroke", "red");
+        xmlSerializer.attribute("", "stroke-width", strokeWidth.toString());
+        xmlSerializer.attribute("", "fill", "none");
+        xmlSerializer.endTag("", "polyline");
+    }
+
+    private static void writeStation(XmlSerializer xmlSerializer, Station station, Coord2D coord, int scale)
+            throws IOException {
+        xmlSerializer.startTag("", "text");
+        xmlSerializer.attribute("", "id", station.getName());
+        xmlSerializer.attribute("", "x", String.format("%.5f", scale * coord.x));
+        xmlSerializer.attribute("", "y", String.format("%.5f", scale * coord.y));
+        xmlSerializer.attribute("", "font-size", String.format("%d", STATION_FONT));
+        xmlSerializer.attribute("", "stroke", "black");
+        xmlSerializer.text(station.getName());
+        xmlSerializer.endTag("", "text");
     }
 
 

@@ -102,7 +102,9 @@ public class SurveyUpdater {
     /**
      * Promote a splay to the leg above it (add it to the promoted legs array).
      * This is used when the user manually wants to add a splay to an existing
-     * leg to create or extend an averaged leg.
+     * leg to create an averaged leg.
+     *
+     * Searches the parent station's  legs list.
      * 
      * @param survey The survey containing the legs
      * @param splay The splay to promote
@@ -113,47 +115,41 @@ public class SurveyUpdater {
             return false; // Not a splay
         }
 
-        // Find the splay in chronological order
-        List<Leg> legs = survey.getAllLegsInChronoOrder();
-        int splayIndex = legs.indexOf(splay);
+        // Find the parent station of splay
+        Station parent = findStationWithLeg(survey, splay);
+        if (parent == null) {
+            return false;
+        }
+
+        // Use the chrono-ordered list to find the nearest connected leg above
+        // this splay
+        List<Leg> chronoLegs = survey.getAllLegsInChronoOrder();
+        int splayIndex = chronoLegs.indexOf(splay);
         if (splayIndex <= 0) {
             return false; // No leg above
         }
 
-        // Get the leg above
-        Leg legAbove = legs.get(splayIndex - 1);
-        
-        // Verify it's a full leg (can be single-shot or already promoted)
-        if (!legAbove.hasDestination()) {
-            return false; // Leg above must be a full leg, not another splay
+        Leg legAbove = null;
+        for (int i = splayIndex - 1; i >= 0; i--) {
+            Leg candidate = chronoLegs.get(i);
+            if (candidate.hasDestination() && parent.getOnwardLegs().contains(candidate)) {
+                legAbove = candidate;
+                break;
+            }
         }
 
-        // Find which station the splay comes from
-        Station splayFrom = findStationWithLeg(survey, splay);
-        if (splayFrom == null) {
-            return false;
+        if (legAbove == null) {
+            return false; // No leg in the parent
         }
 
-        // Find the from station of the leg above
-        Station legAboveFrom = findStationWithLeg(survey, legAbove);
-        Station legAboveTo = legAbove.getDestination();
-
-        // Verify the splay originates from one of the two stations in the leg above
-        if (splayFrom != legAboveFrom && splayFrom != legAboveTo) {
-            return false;
-        }
-
-        // Determine if splay was shot backwards (from the destination station)
+        // If the leg above was shot backwards, mark the splay the same way
         Leg splayToAdd = splay;
-        if (splayFrom == legAboveTo) {
-            // Splay is from the destination (shot backwards)
-            // Create a new leg with ORIGINAL measurements but with wasShotBackwards = true
-            // The reversal/correction is handled elsewhere - we preserve the raw data
+        if (legAbove.wasShotBackwards() && !splay.wasShotBackwards()) {
             splayToAdd = new Leg(
                 splay.getDistance(),
                 splay.getAzimuth(),
                 splay.getInclination(),
-                true  // wasShotBackwards = true
+                true
             );
         }
 
@@ -162,14 +158,12 @@ public class SurveyUpdater {
         
         // Add the original leg (or its promoted shots if it was already averaged)
         if (legAbove.wasPromoted()) {
-            // Leg was already created from multiple shots, add all those shots
             allShots.addAll(Arrays.asList(legAbove.getPromotedFrom()));
         } else {
-            // Single-shot leg, so add the leg itself as the first shot
             allShots.add(legAbove);
         }
         
-        // Add the new splay (with wasShotBackwards flag if needed)
+        // Add the splay (with wasShotBackwards inherited if needed)
         allShots.add(splayToAdd);
 
         // Calculate the new average from all shots
@@ -183,8 +177,8 @@ public class SurveyUpdater {
         // Replace the old leg with the new one
         editLeg(survey, legAbove, newLegAbove);
 
-        // Remove the splay from its originating station
-        splayFrom.getOnwardLegs().remove(splay);
+        // Remove the splay from the parent station
+        parent.getOnwardLegs().remove(splay);
         
         // Remove the splay from the survey record
         survey.removeLegRecord(splay);

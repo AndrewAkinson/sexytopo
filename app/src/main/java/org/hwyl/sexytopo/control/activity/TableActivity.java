@@ -359,7 +359,7 @@ public class TableActivity extends SurveyEditorActivity
 
         // Reverse the order of stations to show the most recent stations at the top
         java.util.Collections.reverse(stations);
-        
+
         for (Station station : stations) {
             spinnerArray.add(station.getName());
         }

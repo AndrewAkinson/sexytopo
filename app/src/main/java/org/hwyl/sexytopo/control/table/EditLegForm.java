@@ -168,7 +168,7 @@ public class EditLegForm extends Form {
         if (!isSplay) {
             validateGraphToField(fromStation, graphToField);
         }
-        
+
         // Validate measurements
         validateDistance();
         validateAzimuth();

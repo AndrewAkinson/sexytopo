@@ -12,7 +12,7 @@ RELEASES_MD = Path("docs/releases.md")
 
 
 def die(msg: str) -> None:
-    print(f"Error: {msg}", file=sys.stderr)
+    sys.stderr.write(f"Error: {msg}\n")
     sys.exit(1)
 
 
@@ -53,9 +53,8 @@ def main() -> None:
     # Warn if new version is not greater than current
     try:
         if parse_version(new_version) <= parse_version(current_name):
-            print(
-                f"Warning: new version {new_version} is not greater than current {current_name}",
-                file=sys.stderr,
+            sys.stderr.write(
+                f"Warning: new version {new_version} is not greater than current {current_name}\n"
             )
     except ValueError:
         pass  # current version may not be N.N.N format; skip comparison
@@ -67,8 +66,8 @@ def main() -> None:
             "Add release notes before running this script."
         )
 
-    print(
-        f"Releasing {current_name} -> {new_version}  (versionCode {current_code} -> {new_code})"
+    sys.stdout.write(
+        f"Releasing {current_name} -> {new_version}  (versionCode {current_code} -> {new_code})\n"
     )
 
     # Patch build.gradle
@@ -83,8 +82,8 @@ def main() -> None:
     subprocess.run(["git", "commit", "-m", f"Release {new_version}"], check=True)
     subprocess.run(["git", "tag", new_version], check=True)
 
-    print(f"\nDone. Commit and tag '{new_version}' created.")
-    print("Push with:  git push && git push --tags")
+    sys.stdout.write(f"\nDone. Commit and tag '{new_version}' created.\n")
+    sys.stdout.write("Push with:  git push && git push --tags\n")
 
 
 if __name__ == "__main__":

@@ -1,8 +1,6 @@
 package org.hwyl.sexytopo.control.io.thirdparty.survextherion;
 
 import android.annotation.SuppressLint;
-import android.text.TextUtils;
-
 import org.hwyl.sexytopo.control.util.GraphToListTranslator;
 import org.hwyl.sexytopo.model.graph.Direction;
 import org.hwyl.sexytopo.model.survey.Leg;
@@ -38,7 +36,8 @@ public class SurvexTherionUtil {
         return builder.toString();
     }
 
-    public static String getMetadata(Survey survey, char commentChar, SurveyFormat format) {
+    public static String getMetadata(Survey survey, char commentChar, SurveyFormat format,
+                                      String teamLines, String exploTeamLines) {
         StringBuilder builder = new StringBuilder();
 
         Trip trip = survey.getTrip();
@@ -56,16 +55,8 @@ public class SurvexTherionUtil {
                 builder.append(commentChar).append(marker).append("instrument inst \"\"\n");
             }
 
-            // Team members - ONLY SKIP if they have NO ROLES (empty roles list)
-            for (Trip.TeamEntry entry : trip.getTeam()) {
-                if (!entry.hasRoles()) {
-                    continue;  // Skip team members with no roles selected
-                }
-                String teamLine = formatMember(entry, format);
-                if (teamLine != null) {
-                    builder.append(marker).append(teamLine).append("\n");
-                }
-            }
+            // Team members
+            builder.append(teamLines);
 
             // Blank line before explo block
             builder.append("\n");
@@ -102,14 +93,8 @@ public class SurvexTherionUtil {
                 }
             }
 
-            // Explo-team lines for Therion (not commented) - only for members with roles
-            if (!isSurvex) {
-                for (Trip.TeamEntry entry : trip.getTeam()) {
-                    if (entry.hasRoles() && hasExplorerRole(entry)) {
-                        builder.append("explo-team \"").append(entry.name).append("\"\n");
-                    }
-                }
-            }
+            // Explo-team lines
+            builder.append(exploTeamLines);
 
             // Trip comments block if any
             if (trip.getComments() != null && !trip.getComments().isEmpty()) {
@@ -120,19 +105,6 @@ public class SurvexTherionUtil {
         }
 
         return builder.toString();
-    }
-
-    private static boolean hasExplorerRole(Trip.TeamEntry entry) {
-        for (Trip.Role role : entry.roles) {
-            if (role == Trip.Role.EXPLORATION) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean hasOnlyExplorerRole(Trip.TeamEntry entry) {
-        return entry.roles.size() == 1 && entry.roles.contains(Trip.Role.EXPLORATION);
     }
 
     public static String getStationCommentsData(Survey survey, SurveyFormat format) {
@@ -197,40 +169,6 @@ public class SurvexTherionUtil {
         builder.append("\n");
 
         return builder.toString();
-    }
-
-    private static String formatMember(Trip.TeamEntry member, SurveyFormat format) {
-        boolean isSurvex = (format == SurveyFormat.SURVEX);
-        // For Therion, skip team members who only have EXPLORATION role
-        if (!isSurvex && hasOnlyExplorerRole(member)) {
-            return null;
-        }
-
-        List<String> fields = new ArrayList<>();
-        fields.add("team");
-        fields.add("\"" + member.name + "\"");
-        for (Trip.Role role : member.roles) {
-            String roleDesc = getRoleDescription(role, format);
-            if (roleDesc != null) {
-                fields.add(roleDesc);
-            }
-        }
-        return TextUtils.join(" ", fields);
-    }
-
-    private static String getRoleDescription(Trip.Role role, SurveyFormat format) {
-        switch(role) {
-            case BOOK:
-                return "notes";
-            case INSTRUMENTS:
-                return "instruments";
-            case EXPLORATION:
-                // Survex can use "explorer", Therion cannot (uses explo-team separately)
-                return (format == SurveyFormat.SURVEX) ? "explorer" : null;
-            case DOG:
-            default:
-                return "assistant";
-        }
     }
 
     @SuppressLint("SimpleDateFormat")

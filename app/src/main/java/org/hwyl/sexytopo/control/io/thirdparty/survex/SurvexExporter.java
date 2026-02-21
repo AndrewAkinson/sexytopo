@@ -7,15 +7,20 @@ import org.hwyl.sexytopo.control.io.thirdparty.survextherion.SurveyFormat;
 import org.hwyl.sexytopo.control.io.thirdparty.survextherion.SurvexTherionUtil;
 import org.hwyl.sexytopo.control.io.translation.SingleFileExporter;
 import org.hwyl.sexytopo.model.survey.Survey;
+import org.hwyl.sexytopo.model.survey.Trip;
 
 public class SurvexExporter extends SingleFileExporter {
 
     public static final char COMMENT_CHAR = ';';
 
-    // StringBuilder is more efficient than string concatenation for multiple appends
-    @SuppressWarnings("StringBufferReplaceableByString")
     public String getContent(Survey survey) {
         StringBuilder builder = new StringBuilder();
+
+        String teamLines = "";
+        Trip trip = survey.getTrip();
+        if (trip != null) {
+            teamLines = formatTeamLines(trip);
+        }
 
         // Begin survey block
         builder.append("*begin ").append(survey.getName()).append("\n");
@@ -23,8 +28,9 @@ public class SurvexExporter extends SingleFileExporter {
         // Creation comment (no version info available without Context)
         builder.append(SurvexTherionUtil.getCreationComment(COMMENT_CHAR, "SexyTopo")).append("\n\n");
 
-        // Metadata (instrument is now in Trip, not passed separately)
-        builder.append(SurvexTherionUtil.getMetadata(survey, COMMENT_CHAR, SurveyFormat.SURVEX)).append("\n");
+        // Metadata
+        builder.append(SurvexTherionUtil.getMetadata(
+                survey, COMMENT_CHAR, SurveyFormat.SURVEX, teamLines, "")).append("\n");
 
         // Station comments data block
         builder.append(SurvexTherionUtil.getStationCommentsData(survey, SurveyFormat.SURVEX));
@@ -59,5 +65,29 @@ public class SurvexExporter extends SingleFileExporter {
     @Override
     public String getExportDirectoryName() {
         return "survex";
+    }
+
+    static String formatTeamLines(Trip trip) {
+        StringBuilder builder = new StringBuilder();
+        for (Trip.TeamEntry entry : trip.getTeam()) {
+            if (!entry.hasRoles()) {
+                continue;
+            }
+            builder.append("*team \"").append(entry.name).append("\"");
+            for (Trip.Role role : entry.roles) {
+                builder.append(" ").append(getRoleDescription(role));
+            }
+            builder.append("\n");
+        }
+        return builder.toString();
+    }
+
+    private static String getRoleDescription(Trip.Role role) {
+        switch (role) {
+            case BOOK: return "notes";
+            case INSTRUMENTS: return "instruments";
+            case EXPLORATION: return "explorer";
+            case DOG: default: return "assistant";
+        }
     }
 }

@@ -243,7 +243,7 @@ public class SurvexTherionImporter {
 
             // Team: "team \"Name\" role1 role2"
             if (effective.startsWith("team ")) {
-                parseTeamLine(effective, teamMap, format);
+                parseTeamLine(effective, teamMap);
                 foundAnyMetadata = true;
                 continue;
             }
@@ -277,24 +277,11 @@ public class SurvexTherionImporter {
                 }
             }
 
-            // Explo-team (Therion only): "explo-team \"Name\""
-            if (!isSurvex && effective.startsWith("explo-team ")) {
-                String name = extractQuotedValue(effective, "explo-team ");
-                if (!name.isEmpty()) {
-                    List<Trip.Role> roles = teamMap.get(name);
-                    if (roles == null) {
-                        roles = new ArrayList<>();
-                        teamMap.put(name, roles);
-                    }
-                    if (!roles.contains(Trip.Role.EXPLORATION)) {
-                        roles.add(Trip.Role.EXPLORATION);
-                    }
-                }
+            // Explo-team (Therion only) / format-specific team parsing
+            if (format.parseExploTeamLine(effective, teamMap)) {
                 foundAnyMetadata = true;
                 continue;
             }
-
-            // Survex explorer role is in team line, handled by parseTeamLine
 
             // Trip comments block: "#Comment from SexyTopo trip information"
             String commentPrefix = String.valueOf(commentChar);
@@ -352,7 +339,7 @@ public class SurvexTherionImporter {
     }
 
 
-    private static void parseTeamLine(String line, Map<String, List<Trip.Role>> teamMap, SurveyFormat format) {
+    private static void parseTeamLine(String line, Map<String, List<Trip.Role>> teamMap) {
         // line: team "Name" role1 role2
         String afterTeam = line.substring(5).trim();
         String name = null;
@@ -402,7 +389,7 @@ public class SurvexTherionImporter {
     }
 
 
-    private static String extractQuotedValue(String line, String prefix) {
+    static String extractQuotedValue(String line, String prefix) {
         String rest = line.substring(prefix.length()).trim();
         if (rest.startsWith("\"") && rest.endsWith("\"")) {
             return rest.substring(1, rest.length() - 1);

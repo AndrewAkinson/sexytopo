@@ -30,7 +30,7 @@ public class TableRowAdapter extends RecyclerView.Adapter<TableRowAdapter.TableR
     private final Map<TextView, TableCol> fieldToTableCol = new HashMap<>();
     private final Map<View, Integer> viewToPosition = new HashMap<>();
     private final List<Integer> columnWidths = new ArrayList<>();
-    
+
     private final Context context;
     private Survey survey;
     private final OnRowClickListener onRowClickListener;
@@ -198,10 +198,10 @@ public class TableRowAdapter extends RecyclerView.Adapter<TableRowAdapter.TableR
         if (station == null) {
             return -1;
         }
-        
+
         for (int i = 0; i < entries.size(); i++) {
             GraphToListTranslator.SurveyListEntry entry = entries.get(i);
-            
+
             // Check if this is the destination station of a leg ("To" column)
             // We want to jump to the row where this station is the destination
             if (entry.getLeg().hasDestination()) {

@@ -44,7 +44,7 @@ public class SurvexTherionUtil {
         if (trip != null) {
             String marker = format.getCommandMarker();
             char commentChar = format.getCommentChar();
-            boolean isSurvex = (format == SurveyFormat.SURVEX);
+            String exploDateKeyword = format.getExplorationDateKeyword();
 
             // Date
             builder.append(marker).append(formatDate(trip.getDate())).append("\n");
@@ -70,28 +70,15 @@ public class SurvexTherionUtil {
             Date exploDate = trip.getExplorationDate();
 
             if (sameAsSurvey) {
-                // Use survey date as exploration date
                 String formattedDate = formatDate(trip.getDate()).substring(5); // Remove "date " prefix
-                if (isSurvex) {
-                    builder.append(marker).append("date explored ").append(formattedDate).append("\n");
-                } else {
-                    builder.append("explo-date ").append(formattedDate).append("\n");
-                }
+                builder.append(marker).append(exploDateKeyword).append(formattedDate).append("\n");
             } else if (exploDate != null) {
-                // User has unchecked "same as survey" AND provided a specific date
                 String formattedExploDate = formatDate(exploDate).substring(5); // Remove "date " prefix
-                if (isSurvex) {
-                    builder.append(marker).append("date explored ").append(formattedExploDate).append("\n");
-                } else {
-                    builder.append("explo-date ").append(formattedExploDate).append("\n");
-                }
+                builder.append(marker).append(exploDateKeyword).append(formattedExploDate).append("\n");
             } else {
                 // No specific date provided - output commented placeholder
-                if (isSurvex) {
-                    builder.append(commentChar).append("*date explored yyyy.mm.dd\n");
-                } else {
-                    builder.append(commentChar).append("explo-date yyyy.mm.dd\n");
-                }
+                builder.append(commentChar).append(marker).append(exploDateKeyword)
+                        .append("yyyy.mm.dd\n");
             }
 
             // Explo-team lines
@@ -197,9 +184,9 @@ public class SurvexTherionUtil {
         Station to = leg.getDestination();
         String toName = to.getName();
 
-        // Replace "-" with ".." for Survex splay syntax
-        if (format == SurveyFormat.SURVEX && toName.equals("-")) {
-            toName = "..";
+        // Replace splay station name with format-specific syntax
+        if (toName.equals("-")) {
+            toName = format.getSplayStationName();
         }
 
         formatField(builder, fromName);

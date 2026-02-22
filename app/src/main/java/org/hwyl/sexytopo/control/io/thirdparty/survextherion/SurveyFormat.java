@@ -16,6 +16,12 @@ public enum SurveyFormat {
         public String getCommandMarker() { return "*"; }
 
         @Override
+        public String getSplayStationName() { return ".."; }
+
+        @Override
+        public String getExplorationDateKeyword() { return "date explored "; }
+
+        @Override
         public boolean parseExploTeamLine(
                 String effective, Map<String, List<Trip.Role>> teamMap) {
             return false;
@@ -28,6 +34,12 @@ public enum SurveyFormat {
 
         @Override
         public String getCommandMarker() { return ""; }
+
+        @Override
+        public String getSplayStationName() { return "-"; }
+
+        @Override
+        public String getExplorationDateKeyword() { return "explo-date "; }
 
         @Override
         public boolean parseExploTeamLine(
@@ -54,6 +66,12 @@ public enum SurveyFormat {
     public abstract char getCommentChar();
 
     public abstract String getCommandMarker();
+
+    /** Splay station name:  Survex ".." Therion "-"*/
+    public abstract String getSplayStationName();
+
+    /** Exploration date keyword: "date explored "- Survex, "explo-date "- Therion */
+    public abstract String getExplorationDateKeyword();
 
     /**
      * Try to parse a team-related line during import.

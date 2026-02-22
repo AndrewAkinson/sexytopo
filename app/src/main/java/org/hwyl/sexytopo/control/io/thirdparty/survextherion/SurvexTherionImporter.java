@@ -249,32 +249,18 @@ public class SurvexTherionImporter {
             }
 
             // Exploration date
-            if (isSurvex) {
-                // "*date explored yyyy.MM.dd"
-                if (effective.startsWith("date explored ")) {
-                    String dateStr = effective.substring(14).trim();
-                    explorationDate = parseDate(dateStr);
-                    foundAnyMetadata = true;
-                    continue;
-                }
-                // Commented: ";*date explored yyyy.mm.dd"
-                if (trimmed.startsWith(";*date explored ")) {
-                    foundAnyMetadata = true;
-                    continue;
-                }
-            } else {
-                // "explo-date yyyy.MM.dd"
-                if (effective.startsWith("explo-date ")) {
-                    String dateStr = effective.substring(11).trim();
-                    explorationDate = parseDate(dateStr);
-                    foundAnyMetadata = true;
-                    continue;
-                }
-                // Commented: "#explo-date yyyy.mm.dd"
-                if (trimmed.startsWith("#explo-date ")) {
-                    foundAnyMetadata = true;
-                    continue;
-                }
+            String exploDateKeyword = format.getExplorationDateKeyword();
+            if (effective.startsWith(exploDateKeyword)) {
+                String dateStr = effective.substring(exploDateKeyword.length()).trim();
+                explorationDate = parseDate(dateStr);
+                foundAnyMetadata = true;
+                continue;
+            }
+            // Commented exploration date placeholder
+            String commentedExploDate = commentChar + format.getCommandMarker() + exploDateKeyword;
+            if (trimmed.startsWith(commentedExploDate)) {
+                foundAnyMetadata = true;
+                continue;
             }
 
             // Explo-team (Therion only) / format-specific team parsing

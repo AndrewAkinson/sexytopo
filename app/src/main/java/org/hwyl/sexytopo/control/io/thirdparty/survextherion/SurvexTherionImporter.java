@@ -85,7 +85,7 @@ public class SurvexTherionImporter {
     /**
      * Parse passage data section to extract station comments.
      * 
-     * Supports both formats:
+     * Supports:
      * - Therion: "data passage station ignoreall"
      * - Survex:  "*data passage station ignoreall"
      * 
@@ -94,7 +94,9 @@ public class SurvexTherionImporter {
      * @return Map of station name to passage comment
      */
     public static Map<String, String> parsePassageData(String text, SurveyFormat format) {
-        boolean isSurvex = (format == SurveyFormat.SURVEX);
+        String dataPassagePrefix = format.getDataPassagePrefix();
+        String dataNormalPrefix = format.getDataNormalPrefix();
+        String dataCommandPrefix = format.getCommandMarker() + "data ";
         Map<String, String> passageComments = new HashMap<>();
         
         String[] lines = text.split("\n");
@@ -107,25 +109,13 @@ public class SurvexTherionImporter {
                 continue;
             }
             
-            // Check if entering passage data block
-            // Therion: "data passage"
-            // Survex:  "*data passage"
-            String dataPassagePrefix = isSurvex ? "*data passage" : "data passage";
-            String dataNormalPrefix = isSurvex ? "*data normal" : "data normal";
-            
             if (trimmed.startsWith(dataPassagePrefix)) {
                 inPassageBlock = true;
                 continue;
             }
             
-            // Check if exiting passage data block (entering a different data block)
-            if (inPassageBlock && trimmed.startsWith(dataNormalPrefix)) {
-                inPassageBlock = false;
-                continue;
-            }
-            
-            // Also exit if we hit another *data command in Survex
-            if (isSurvex && inPassageBlock && trimmed.startsWith("*data ") 
+            // Exit passage block on any other data command
+            if (inPassageBlock && trimmed.startsWith(dataCommandPrefix)
                 && !trimmed.startsWith(dataPassagePrefix)) {
                 inPassageBlock = false;
                 continue;
@@ -193,7 +183,6 @@ public class SurvexTherionImporter {
 
 
     public static Trip parseMetadata(String text, SurveyFormat format) {
-        boolean isSurvex = (format == SurveyFormat.SURVEX);
         char commentChar = format.getCommentChar();
 
         Date surveyDate = null;
@@ -212,11 +201,8 @@ public class SurvexTherionImporter {
                 continue;
             }
 
-            // Strip Survex * prefix for uniform handling
-            String effective = trimmed;
-            if (isSurvex && effective.startsWith("*")) {
-                effective = effective.substring(1);
-            }
+            // Strip command prefix for uniform data handling
+            String effective = format.stripCommandPrefix(trimmed);
 
             // Survey date: "date yyyy.MM.dd" (but not "date explored")
             if (effective.startsWith("date ") && !effective.startsWith("date explored")) {
@@ -227,15 +213,14 @@ public class SurvexTherionImporter {
             }
 
             // Instrument: "instrument inst \"name\""
-            // Commented instrument means empty: "#instrument inst \"\"" or ";*instrument inst \"\""
+            // Commented out instrument are ignored
             if (effective.startsWith("instrument inst ")) {
                 instrument = extractQuotedValue(effective, "instrument inst ");
                 foundAnyMetadata = true;
                 continue;
             }
             // Check for commented-out instrument line
-            String commentedInstrument = isSurvex ? ";*instrument inst " : "#instrument inst ";
-            if (trimmed.startsWith(commentedInstrument)) {
+            if (trimmed.startsWith(format.getCommentedInstrumentPrefix())) {
                 instrument = "";
                 foundAnyMetadata = true;
                 continue;

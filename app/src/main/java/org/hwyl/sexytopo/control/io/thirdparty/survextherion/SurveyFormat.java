@@ -79,4 +79,28 @@ public enum SurveyFormat {
      */
     public abstract boolean parseExploTeamLine(
             String effective, Map<String, List<Trip.Role>> teamMap);
+
+    /** Commented-out instrument prefix: ";*instrument inst " for Survex, "#instrument inst " for Therion */
+    public String getCommentedInstrumentPrefix() {
+        return getCommentChar() + getCommandMarker() + "instrument inst ";
+    }
+
+    /** Data passage prefix: "*data passage" for Survex, "data passage" for Therion */
+    public String getDataPassagePrefix() {
+        return getCommandMarker() + "data passage";
+    }
+
+    /** Data normal prefix: "*data normal" for Survex, "data normal" for Therion */
+    public String getDataNormalPrefix() {
+        return getCommandMarker() + "data normal";
+    }
+
+    /** Strip command prefix from a line: removes leading "*" for Survex, no-op for Therion */
+    public String stripCommandPrefix(String line) {
+        String marker = getCommandMarker();
+        if (!marker.isEmpty() && line.startsWith(marker)) {
+            return line.substring(marker.length());
+        }
+        return line;
+    }
 }

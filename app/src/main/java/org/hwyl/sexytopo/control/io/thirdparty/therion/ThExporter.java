@@ -24,7 +24,8 @@ public class ThExporter {
 
         // Creation comment
         String versionInfo = SexyTopoConstants.APP_NAME + " " + SexyTopoActivity.getVersionName(context);
-        builder.append(SurvexTherionUtil.getCreationComment(TherionExporter.COMMENT_CHAR, versionInfo)).append("\n\n");
+        builder.append(SurvexTherionUtil.getCreationComment(
+                SurveyFormat.THERION.getCommentChar(), versionInfo)).append("\n\n");
 
         // Input files
         builder.append(SurvexTherionUtil.getInputText(th2Files)).append("\n\n");
@@ -38,13 +39,13 @@ public class ThExporter {
             exploTeamLines = formatExploTeamLines(trip);
         }
         builder.append(SurvexTherionUtil.getMetadata(
-                survey, TherionExporter.COMMENT_CHAR, SurveyFormat.THERION,
+                survey, SurveyFormat.THERION,
                 teamLines, exploTeamLines)).append("\n");
 
         // Centreline block
         builder.append("centreline\n");
         builder.append(SurvexTherionUtil.getStationCommentsData(survey, SurveyFormat.THERION));
-        builder.append(SurvexTherionUtil.getCentrelineData(survey, TherionExporter.COMMENT_CHAR, SurveyFormat.THERION));
+        builder.append(SurvexTherionUtil.getCentrelineData(survey, SurveyFormat.THERION));
         builder.append(SurvexTherionUtil.getExtendedElevationExtensions(survey, SurveyFormat.THERION));
         builder.append("endcentreline\n");
 
@@ -61,7 +62,7 @@ public class ThExporter {
         String centrelineText =
             "centreline\n" +
             SurvexTherionUtil.getStationCommentsData(survey, SurveyFormat.THERION) +
-            SurvexTherionUtil.getCentrelineData(survey, TherionExporter.COMMENT_CHAR, SurveyFormat.THERION) +
+            SurvexTherionUtil.getCentrelineData(survey, SurveyFormat.THERION) +
             SurvexTherionUtil.getExtendedElevationExtensions(survey, SurveyFormat.THERION) +
             "endcentreline\n";
         String newContent = replaceCentreline(originalFileContent, centrelineText);

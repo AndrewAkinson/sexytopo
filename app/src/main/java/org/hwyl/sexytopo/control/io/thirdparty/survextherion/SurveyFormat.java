@@ -10,6 +10,12 @@ public enum SurveyFormat {
 
     SURVEX {
         @Override
+        public char getCommentChar() { return ';'; }
+
+        @Override
+        public String getCommandMarker() { return "*"; }
+
+        @Override
         public boolean parseExploTeamLine(
                 String effective, Map<String, List<Trip.Role>> teamMap) {
             return false;
@@ -17,6 +23,12 @@ public enum SurveyFormat {
     },
 
     THERION {
+        @Override
+        public char getCommentChar() { return '#'; }
+
+        @Override
+        public String getCommandMarker() { return ""; }
+
         @Override
         public boolean parseExploTeamLine(
                 String effective, Map<String, List<Trip.Role>> teamMap) {
@@ -38,6 +50,10 @@ public enum SurveyFormat {
             return true;
         }
     };
+
+    public abstract char getCommentChar();
+
+    public abstract String getCommandMarker();
 
     /**
      * Try to parse a team-related line during import.

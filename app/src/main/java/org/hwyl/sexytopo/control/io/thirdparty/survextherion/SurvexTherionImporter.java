@@ -194,7 +194,7 @@ public class SurvexTherionImporter {
 
     public static Trip parseMetadata(String text, SurveyFormat format) {
         boolean isSurvex = (format == SurveyFormat.SURVEX);
-        char commentChar = isSurvex ? ';' : '#';
+        char commentChar = format.getCommentChar();
 
         Date surveyDate = null;
         Date explorationDate = null;
@@ -466,20 +466,18 @@ public class SurvexTherionImporter {
         }
 
         Leg leg;
-        Station legFrom, legTo;
+        Station legFrom;
 
         if (isBackward) {
             // This leg was shot backwards (from new station to existing station)
             // Store with swapped stations and wasShotBackwards = true
-            
             legFrom = to;
-            legTo = from;
             
             // Create leg with original measurements and wasShotBackwards = true
-            if (legTo == Survey.NULL_STATION) {
+            if (from == Survey.NULL_STATION) {
                 leg = new Leg(distance, azimuth, inclination, true);
             } else {
-                leg = new Leg(distance, azimuth, inclination, legTo, promotedFrom, true);
+                leg = new Leg(distance, azimuth, inclination, from, promotedFrom, true);
             }
             
             // Station comment goes on the TO station (the new one in the file)
@@ -489,7 +487,6 @@ public class SurvexTherionImporter {
         } else {
             // Forward leg
             legFrom = from;
-            legTo = to;
             
             if (to == Survey.NULL_STATION) {
                 leg = new Leg(distance, azimuth, inclination);

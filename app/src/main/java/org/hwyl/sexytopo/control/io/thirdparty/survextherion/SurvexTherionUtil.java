@@ -36,13 +36,14 @@ public class SurvexTherionUtil {
         return builder.toString();
     }
 
-    public static String getMetadata(Survey survey, char commentChar, SurveyFormat format,
+    public static String getMetadata(Survey survey, SurveyFormat format,
                                       String teamLines, String exploTeamLines) {
         StringBuilder builder = new StringBuilder();
 
         Trip trip = survey.getTrip();
         if (trip != null) {
-            String marker = (format == SurveyFormat.SURVEX) ? "*" : "";
+            String marker = format.getCommandMarker();
+            char commentChar = format.getCommentChar();
             boolean isSurvex = (format == SurveyFormat.SURVEX);
 
             // Date
@@ -110,7 +111,7 @@ public class SurvexTherionUtil {
     public static String getStationCommentsData(Survey survey, SurveyFormat format) {
 
         StringBuilder builder = new StringBuilder();
-        String marker = (format == SurveyFormat.SURVEX) ? "*" : "";
+        String marker = format.getCommandMarker();
 
         // Collect all stations with comments
         List<Station> stationsWithComments = new ArrayList<>();
@@ -143,16 +144,13 @@ public class SurvexTherionUtil {
         }
     }
 
-    public static String getCentrelineData(
-            Survey survey,
-            char commentChar,
-            SurveyFormat format) {
+    public static String getCentrelineData(Survey survey, SurveyFormat format) {
 
         GraphToListTranslator graphToListTranslator = new GraphToListTranslator();
         StringBuilder builder = new StringBuilder();
 
         // Add data declaration line with optional syntax marker
-        String marker = (format == SurveyFormat.SURVEX) ? "*" : "";
+        String marker = format.getCommandMarker();
         builder.append(marker).append("data normal from to tape compass clino ignoreall\n");
 
         // Get chronological list of survey entries
@@ -161,7 +159,7 @@ public class SurvexTherionUtil {
 
         // Format each entry
         for (GraphToListTranslator.SurveyListEntry entry : list) {
-            formatEntry(builder, entry, commentChar, format);
+            formatEntry(builder, entry, format);
             builder.append("\n");
         }
 
@@ -190,7 +188,6 @@ public class SurvexTherionUtil {
     public static void formatEntry(
             StringBuilder builder,
             GraphToListTranslator.SurveyListEntry entry,
-            char commentChar,
             SurveyFormat format) {
 
         Station from = entry.getFrom();
@@ -213,6 +210,7 @@ public class SurvexTherionUtil {
 
         // Handle promoted legs - put readings on subsequent lines
         if (leg.wasPromoted()) {
+            char commentChar = format.getCommentChar();
             Leg[] precursors = leg.getPromotedFrom();
             for (Leg precursor : precursors) {
                 builder.append("\n");
@@ -238,7 +236,7 @@ public class SurvexTherionUtil {
 
     public static String getExtendedElevationExtensions(Survey survey, SurveyFormat format) {
         StringBuilder builder = new StringBuilder();
-        String marker = (format == SurveyFormat.SURVEX) ? "*" : "";
+        String marker = format.getCommandMarker();
         generateExtendCommandsFromStation(builder, survey.getOrigin(), null, marker);
         return builder.toString();
     }

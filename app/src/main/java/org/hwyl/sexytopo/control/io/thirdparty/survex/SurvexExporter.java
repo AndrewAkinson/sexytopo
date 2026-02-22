@@ -11,8 +11,6 @@ import org.hwyl.sexytopo.model.survey.Trip;
 
 public class SurvexExporter extends SingleFileExporter {
 
-    public static final char COMMENT_CHAR = ';';
-
     public String getContent(Survey survey) {
         StringBuilder builder = new StringBuilder();
 
@@ -26,17 +24,18 @@ public class SurvexExporter extends SingleFileExporter {
         builder.append("*begin ").append(survey.getName()).append("\n");
 
         // Creation comment (no version info available without Context)
-        builder.append(SurvexTherionUtil.getCreationComment(COMMENT_CHAR, "SexyTopo")).append("\n\n");
+        builder.append(SurvexTherionUtil.getCreationComment(
+                SurveyFormat.SURVEX.getCommentChar(), "SexyTopo")).append("\n\n");
 
         // Metadata
         builder.append(SurvexTherionUtil.getMetadata(
-                survey, COMMENT_CHAR, SurveyFormat.SURVEX, teamLines, "")).append("\n");
+                survey, SurveyFormat.SURVEX, teamLines, "")).append("\n");
 
         // Station comments data block
         builder.append(SurvexTherionUtil.getStationCommentsData(survey, SurveyFormat.SURVEX));
 
         // Centreline data
-        builder.append(SurvexTherionUtil.getCentrelineData(survey, COMMENT_CHAR, SurveyFormat.SURVEX));
+        builder.append(SurvexTherionUtil.getCentrelineData(survey, SurveyFormat.SURVEX));
 
         // Extended elevation
         builder.append("\n");

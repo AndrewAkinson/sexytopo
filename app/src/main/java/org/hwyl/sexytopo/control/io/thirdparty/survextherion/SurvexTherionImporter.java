@@ -94,7 +94,7 @@ public class SurvexTherionImporter {
      */
     public static Map<String, String> parsePassageData(String text, SurveyFormat format) {
         String dataPassagePrefix = format.getDataPassagePrefix();
-        String dataNormalPrefix = format.getDataNormalPrefix();
+        format.getDataNormalPrefix();
         String dataCommandPrefix = format.getCommandMarker() + "data ";
         Map<String, String> passageComments = new HashMap<>();
         
@@ -147,7 +147,6 @@ public class SurvexTherionImporter {
      * Merge passage data comments with existing station comments.
      *
      * If a station has both a passage comment and a leg-line comment,
-     * combine them with " :: " separator.
      *
      * Format: <passage comment> :: <leg-line comment>
      *
@@ -218,9 +217,9 @@ public class SurvexTherionImporter {
                 foundAnyMetadata = true;
                 continue;
             }
-            // Check for commented-out instrument line
+            // Commented-out instrument line — explicitly clear
             if (trimmed.startsWith(format.getCommentedInstrumentPrefix())) {
-                instrument = "";
+                instrument = null;
                 foundAnyMetadata = true;
                 continue;
             }
@@ -278,9 +277,7 @@ public class SurvexTherionImporter {
             trip.setDate(surveyDate);
         }
 
-        if (instrument != null) {
-            trip.setInstrument(instrument);
-        }
+        trip.setInstrument(instrument);
 
         // Build team list
         List<Trip.TeamEntry> teamEntries = new ArrayList<>();

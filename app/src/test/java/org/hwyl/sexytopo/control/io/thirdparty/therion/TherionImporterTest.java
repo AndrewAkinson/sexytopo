@@ -437,8 +437,9 @@ public class TherionImporterTest {
         // Date should be 2026.01.05
         Assert.assertNotNull(trip.getDate());
 
-        // Instrument should be empty (commented out)
-        Assert.assertEquals("", trip.getInstrument());
+        // Instrument commented out — should not be set
+        Assert.assertNull(trip.getInstrument());
+        Assert.assertFalse(trip.hasInstrument());
 
         // Team: Will Stuart (instruments) and Andrew Atkinson (notes)
         Assert.assertEquals(2, trip.getTeam().size());
@@ -533,7 +534,64 @@ public class TherionImporterTest {
 
         Trip trip = SurvexTherionImporter.parseMetadata(survexText, SurveyFormat.SURVEX);
         Assert.assertNotNull(trip);
-        Assert.assertEquals("", trip.getInstrument());
+        Assert.assertNull(trip.getInstrument());
+        Assert.assertFalse(trip.hasInstrument());
+    }
+
+    // Splays from later stations can appear before the first real leg in
+    // chronologically-ordered exports.  The origin must be set from the first
+    // non-splay leg so that all stations remain reachable in the survey tree.
+    private static final String SPLAYS_BEFORE_LEGS_TEXT =
+        "encoding utf-8\n" +
+        "survey SplaysFirst\n" +
+        "centreline\n" +
+        "data normal from to tape compass clino ignoreall\n" +
+        "3\t-\t1.000\t90.00\t0.00\n" +    // splay from 3 (not yet connected)
+        "3\t-\t2.000\t180.00\t0.00\n" +   // another splay from 3
+        "1\t-\t1.500\t270.00\t5.00\n" +   // splay from 1
+        "1\t2\t5.000\t100.00\t2.00\n" +   // first real leg → origin should be 1
+        "2\t3\t4.000\t200.00\t-3.00\n" +  // connects to 3 (already has splays)
+        "endcentreline\n" +
+        "endsurvey\n";
+
+    private static final List<String> SPLAYS_BEFORE_LEGS_LINES =
+        Arrays.asList(SPLAYS_BEFORE_LEGS_TEXT.split("\n"));
+
+    @Test
+    public void testSplaysBeforeLegsOrigin() throws Exception {
+        Survey survey = new Survey();
+        TherionImporter.updateCentreline(SPLAYS_BEFORE_LEGS_LINES, survey);
+
+        // Origin must be station 1 (first non-splay leg), not station 3 (first splay)
+        Assert.assertEquals("1", survey.getOrigin().getName());
+    }
+
+    @Test
+    public void testSplaysBeforeLegsAllStationsReachable() throws Exception {
+        Survey survey = new Survey();
+        TherionImporter.updateCentreline(SPLAYS_BEFORE_LEGS_LINES, survey);
+
+        // All 3 stations must be reachable from the origin
+        Assert.assertEquals(3, survey.getAllStations().size());
+        Assert.assertNotNull(survey.getStationByName("1"));
+        Assert.assertNotNull(survey.getStationByName("2"));
+        Assert.assertNotNull(survey.getStationByName("3"));
+    }
+
+    @Test
+    public void testSplaysBeforeLegsPreservesSplays() throws Exception {
+        Survey survey = new Survey();
+        TherionImporter.updateCentreline(SPLAYS_BEFORE_LEGS_LINES, survey);
+
+        // Station 3's splays (added before connecting leg) must be preserved
+        Station station3 = survey.getStationByName("3");
+        List<Leg> splays3 = station3.getUnconnectedOnwardLegs();
+        Assert.assertEquals(2, splays3.size());
+
+        // Station 1's splay must also be preserved
+        Station station1 = survey.getStationByName("1");
+        List<Leg> splays1 = station1.getUnconnectedOnwardLegs();
+        Assert.assertEquals(1, splays1.size());
     }
 
     @Test

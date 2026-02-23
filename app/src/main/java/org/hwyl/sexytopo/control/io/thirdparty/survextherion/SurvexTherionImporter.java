@@ -22,8 +22,7 @@ import java.util.regex.Pattern;
  */
 public class SurvexTherionImporter {
 
-    @SuppressWarnings("RegExpRedundantEscape") // can't be that redundant, as it crashes without it
-    public static final Pattern COMMENT_INSTRUCTION_REGEX = Pattern.compile("(\\{.*?\\})");
+    public static final Pattern COMMENT_INSTRUCTION_REGEX = Pattern.compile("([{].*?[}])");
 
 
     /**
@@ -398,11 +397,7 @@ public class SurvexTherionImporter {
         float azimuth = Float.parseFloat(fields[3]);
         float inclination = Float.parseFloat(fields[4]);
 
-        if (nameToStation.isEmpty()) {
-            Station origin = new Station(fromName);
-            survey.setOrigin(origin);
-            nameToStation.put(fromName, origin);
-        }
+        boolean isSplay = toName.equals(SexyTopoConstants.BLANK_STATION_NAME);
 
         // Detect if this is a backward leg BEFORE creating new stations
         boolean isBackward = isBackwardLeg(fromName, toName, nameToStation);
@@ -414,12 +409,18 @@ public class SurvexTherionImporter {
         }
 
         Station to = Survey.NULL_STATION;
-        if (!toName.equals(SexyTopoConstants.BLANK_STATION_NAME)) {
+        if (!isSplay) {
             to = nameToStation.get(toName);
             if (to == null) {
                 to = new Station(toName);
                 nameToStation.put(toName, to);
             }
+        }
+
+        // Set origin from first non-splay leg
+        // For backward legs the logical root is the TO station.
+        if (!isSplay && !nameToStation.containsValue(survey.getOrigin())) {
+            survey.setOrigin(isBackward ? to : from);
         }
 
         // Extract promoted legs from inline{} comment

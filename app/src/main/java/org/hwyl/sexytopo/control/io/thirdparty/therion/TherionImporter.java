@@ -31,13 +31,20 @@ public class TherionImporter extends Importer {
     public Survey toSurvey(Context context, DocumentFile directory) throws Exception {
 
         Survey survey = null;
+        List<DocumentFile> xviFiles = new ArrayList<>();
 
+        // Parse .th file first to create the survey
         for (DocumentFile file : directory.listFiles()) {
-
             if (file.getName().endsWith("th")) {
                 survey = parseTh(context, file);
-
             } else if (file.getName().endsWith("xvi")) {
+                xviFiles.add(file);
+            }
+        }
+
+        // Then apply sketches
+        if (survey != null) {
+            for (DocumentFile file : xviFiles) {
                 String filenameNoExtension = FilenameUtils.removeExtension(file.getName());
                 if (filenameNoExtension.endsWith(SexyTopoConstants.PLAN_SUFFIX)) {
                     Sketch sketch = XviImporter.getSketch(context, file);
@@ -46,7 +53,6 @@ public class TherionImporter extends Importer {
                     Sketch sketch = XviImporter.getSketch(context, file);
                     survey.setElevationSketch(sketch);
                 }
-
             }
         }
 
@@ -136,6 +142,10 @@ public class TherionImporter extends Importer {
 
                 String stationName = tokens[1];
                 Station station = survey.getStationByName(stationName);
+                if (station == null) {
+                    Log.e("extend: station " + stationName + " not found");
+                    continue;
+                }
 
                 SurveyUpdater.setDirectionOfSubtree(station, direction);
             }

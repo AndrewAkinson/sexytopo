@@ -13,7 +13,7 @@ public enum SurveyFormat {
         public char getCommentChar() { return ';'; }
 
         @Override
-        public String getCommandMarker() { return "*"; }
+        public String getCommandChar() { return "*"; }
 
         @Override
         public String getSplayStationName() { return ".."; }
@@ -33,7 +33,7 @@ public enum SurveyFormat {
         public char getCommentChar() { return '#'; }
 
         @Override
-        public String getCommandMarker() { return ""; }
+        public String getCommandChar() { return ""; }
 
         @Override
         public String getSplayStationName() { return "-"; }
@@ -65,7 +65,7 @@ public enum SurveyFormat {
 
     public abstract char getCommentChar();
 
-    public abstract String getCommandMarker();
+    public abstract String getCommandChar();
 
     /** Splay station name:  Survex ".." Therion "-"*/
     public abstract String getSplayStationName();
@@ -82,22 +82,22 @@ public enum SurveyFormat {
 
     /** Commented-out instrument prefix: ";*instrument inst " for Survex, "#instrument inst " for Therion */
     public String getCommentedInstrumentPrefix() {
-        return getCommentChar() + getCommandMarker() + "instrument inst ";
+        return getCommentChar() + getCommandChar() + "instrument inst ";
     }
 
     /** Data passage prefix: "*data passage" for Survex, "data passage" for Therion */
     public String getDataPassagePrefix() {
-        return getCommandMarker() + "data passage";
+        return getCommandChar() + "data passage";
     }
 
     /** Data normal prefix: "*data normal" for Survex, "data normal" for Therion */
     public String getDataNormalPrefix() {
-        return getCommandMarker() + "data normal";
+        return getCommandChar() + "data normal";
     }
 
     /** Strip command prefix from a line: removes leading "*" for Survex, no-op for Therion */
     public String stripCommandPrefix(String line) {
-        String marker = getCommandMarker();
+        String marker = getCommandChar();
         if (!marker.isEmpty() && line.startsWith(marker)) {
             return line.substring(marker.length());
         }

@@ -95,7 +95,7 @@ public class SurvexTherionImporter {
     public static Map<String, String> parsePassageData(String text, SurveyFormat format) {
         String dataPassagePrefix = format.getDataPassagePrefix();
         format.getDataNormalPrefix();
-        String dataCommandPrefix = format.getCommandMarker() + "data ";
+        String dataCommandPrefix = format.getCommandChar() + "data ";
         Map<String, String> passageComments = new HashMap<>();
         
         String[] lines = text.split("\n");
@@ -240,7 +240,7 @@ public class SurvexTherionImporter {
                 continue;
             }
             // Commented exploration date placeholder
-            String commentedExploDate = commentChar + format.getCommandMarker() + exploDateKeyword;
+            String commentedExploDate = commentChar + format.getCommandChar() + exploDateKeyword;
             if (trimmed.startsWith(commentedExploDate)) {
                 foundAnyMetadata = true;
                 continue;

@@ -42,7 +42,7 @@ public class SurvexTherionUtil {
 
         Trip trip = survey.getTrip();
         if (trip != null) {
-            String marker = format.getCommandMarker();
+            String marker = format.getCommandChar();
             char commentChar = format.getCommentChar();
             String exploDateKeyword = format.getExplorationDateKeyword();
 
@@ -98,7 +98,7 @@ public class SurvexTherionUtil {
     public static String getStationCommentsData(Survey survey, SurveyFormat format) {
 
         StringBuilder builder = new StringBuilder();
-        String marker = format.getCommandMarker();
+        String marker = format.getCommandChar();
 
         // Collect all stations with comments
         List<Station> stationsWithComments = new ArrayList<>();
@@ -137,7 +137,7 @@ public class SurvexTherionUtil {
         StringBuilder builder = new StringBuilder();
 
         // Add data declaration line with optional syntax marker
-        String marker = format.getCommandMarker();
+        String marker = format.getCommandChar();
         builder.append(marker).append("data normal from to tape compass clino ignoreall\n");
 
         // Get chronological list of survey entries
@@ -223,7 +223,7 @@ public class SurvexTherionUtil {
 
     public static String getExtendedElevationExtensions(Survey survey, SurveyFormat format) {
         StringBuilder builder = new StringBuilder();
-        String marker = format.getCommandMarker();
+        String marker = format.getCommandChar();
         generateExtendCommandsFromStation(builder, survey.getOrigin(), null, marker);
         return builder.toString();
     }

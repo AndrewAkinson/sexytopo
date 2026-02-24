@@ -595,6 +595,31 @@ public class TherionImporterTest {
     }
 
     @Test
+    public void testChronologicalOrderPreserved() throws Exception {
+        Survey survey = new Survey();
+        TherionImporter.updateCentreline(SPLAYS_BEFORE_LEGS_LINES, survey);
+
+        // File order: 3 splay, 3 splay, 1 splay, 1→2 leg, 2→3 leg
+        List<Leg> chrono = survey.getAllLegsInChronoOrder();
+        Assert.assertEquals(5, chrono.size());
+
+        // First two are splays from station 3
+        Assert.assertFalse(chrono.get(0).hasDestination());
+        Assert.assertFalse(chrono.get(1).hasDestination());
+
+        // Third is splay from station 1
+        Assert.assertFalse(chrono.get(2).hasDestination());
+
+        // Fourth is leg 1→2
+        Assert.assertTrue(chrono.get(3).hasDestination());
+        Assert.assertEquals("2", chrono.get(3).getDestination().getName());
+
+        // Fifth is leg 2→3
+        Assert.assertTrue(chrono.get(4).hasDestination());
+        Assert.assertEquals("3", chrono.get(4).getDestination().getName());
+    }
+
+    @Test
     public void testElevationDirectionExtraction() throws Exception {
         Survey survey = new Survey();
         TherionImporter.updateCentreline(LINES, survey);

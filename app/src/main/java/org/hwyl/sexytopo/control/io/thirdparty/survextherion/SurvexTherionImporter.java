@@ -94,7 +94,6 @@ public class SurvexTherionImporter {
      */
     public static Map<String, String> parsePassageData(String text, SurveyFormat format) {
         String dataPassagePrefix = format.getDataPassagePrefix();
-        format.getDataNormalPrefix();
         String dataCommandPrefix = format.getCommandChar() + "data ";
         Map<String, String> passageComments = new HashMap<>();
         
@@ -470,6 +469,7 @@ public class SurvexTherionImporter {
         }
 
         legFrom.addOnwardLeg(leg);
+        survey.addLegRecord(leg);
         survey.setActiveStation(legFrom);
     }
 

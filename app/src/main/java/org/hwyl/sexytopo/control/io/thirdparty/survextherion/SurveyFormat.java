@@ -90,11 +90,6 @@ public enum SurveyFormat {
         return getCommandChar() + "data passage";
     }
 
-    /** Data normal prefix: "*data normal" for Survex, "data normal" for Therion */
-    public String getDataNormalPrefix() {
-        return getCommandChar() + "data normal";
-    }
-
     /** Strip command prefix from a line: removes leading "*" for Survex, no-op for Therion */
     public String stripCommandPrefix(String line) {
         String marker = getCommandChar();

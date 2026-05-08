@@ -576,6 +576,7 @@
     <string name="menu_edit_leg">Modifica</string>
     <string name="menu_upgrade_row">Forza Nuova Stazione</string>
     <string name="menu_promote_to_above_leg">Aggiungi al tratto sopra</string>
+    <string name="menu_hide_on_sketches">Nascondi negli schizzi</string>
     <string name="toast_splay_promoted">Splay combinato con il tratto</string>
     <string name="toast_no_leg_above">Nessun tratto valido da combinare</string>
     <string name="menu_upgrade_splay">Promuovi a Tratto</string>

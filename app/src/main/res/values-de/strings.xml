@@ -576,6 +576,7 @@
     <string name="menu_edit_leg">Bearbeiten</string>
     <string name="menu_upgrade_row">Neuen Messpunkt erzwingen</string>
     <string name="menu_promote_to_above_leg">Zur obigen Messung hinzufügen</string>
+    <string name="menu_hide_on_sketches">In Skizzen ausblenden</string>
     <string name="toast_splay_promoted">Splay mit Messung kombiniert</string>
     <string name="toast_no_leg_above">Keine gültige Messung zum Kombinieren</string>
     <string name="menu_upgrade_splay">Zu Messstrecke aufwerten</string>

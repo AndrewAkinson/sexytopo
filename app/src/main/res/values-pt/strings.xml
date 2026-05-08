@@ -576,6 +576,7 @@
     <string name="menu_edit_leg">Editar</string>
     <string name="menu_upgrade_row">Forçar Nova Estação</string>
     <string name="menu_promote_to_above_leg">Adicionar ao trecho acima</string>
+    <string name="menu_hide_on_sketches">Ocultar nos esboços</string>
     <string name="toast_splay_promoted">Raio combinado com trecho</string>
     <string name="toast_no_leg_above">Nenhum trecho válido para combinar</string>
     <string name="menu_upgrade_splay">Promover a Trecho</string>

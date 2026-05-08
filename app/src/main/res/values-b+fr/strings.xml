@@ -578,6 +578,7 @@
     <string name="menu_edit_leg">Modifier</string>
     <string name="menu_upgrade_row">Forcer une nouvelle station</string>
     <string name="menu_promote_to_above_leg">Ajouter à la visée ci-dessus</string>
+    <string name="menu_hide_on_sketches">Masquer sur les croquis</string>
     <string name="toast_splay_promoted">Radiale combinée avec la visée</string>
     <string name="toast_no_leg_above">Aucune visée valide à combiner</string>
     <string name="menu_upgrade_splay">Convertir en visée directionnelle</string>

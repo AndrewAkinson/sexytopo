@@ -194,10 +194,7 @@ public class ContextMenuManager {
 
                 MenuItem crossOutItem = menu.findItem(R.id.action_cross_out_leg);
                 if (crossOutItem != null) {
-                    crossOutItem.setTitle(
-                            currentLeg.isCrossedOut()
-                                    ? R.string.menu_uncross_out
-                                    : R.string.menu_cross_out);
+                    crossOutItem.setChecked(currentLeg.isCrossedOut());
                 }
                 if (legMenuItem != null) {
                     legMenuItem.setTitle(R.string.menu_incoming_leg);

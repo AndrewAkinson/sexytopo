@@ -29,7 +29,8 @@
 
         <item
             android:id="@+id/action_cross_out_leg"
-            android:title="@string/menu_cross_out"/>
+            android:title="@string/menu_hide_on_sketches"
+            android:checkable="true"/>
 
         <item
             android:id="@+id/action_downgrade_leg"

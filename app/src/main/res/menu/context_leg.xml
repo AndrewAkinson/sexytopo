@@ -28,14 +28,14 @@
             android:visible="false"/>
 
         <item
-            android:id="@+id/action_hide_on_sketch_leg"
-            android:title="@string/menu_hide_on_sketches"
-            android:checkable="true"/>
-
-        <item
             android:id="@+id/action_downgrade_leg"
             android:title="@string/menu_downgrade_leg"
             android:visible="false"/>
+
+        <item
+            android:id="@+id/action_hide_on_sketch_leg"
+            android:title="@string/menu_hide_on_sketches"
+            android:checkable="true"/>
     </group>
 
     <!-- Delete leg separated by divider -->

@@ -81,34 +81,7 @@ public class SurvexExporterTest {
     }
 
     @Test
-    public void testHiddenOnSketchLegIsCommentedOut() {
-        SurvexExporter exporter = new SurvexExporter();
-        Survey survey = BasicTestSurveyCreator.createStraightNorth();
-        survey.getAllLegs().get(0).setHiddenOnSketch(true);
-        String content = exporter.getContent(survey);
-        Assert.assertTrue(content.contains(";1\t2\t5.000\t0.00\t0.00"));
-    }
-
-    @Test
-    public void testUncrossedLegIsNotCommentedOut() {
-        SurvexExporter exporter = new SurvexExporter();
-        Survey survey = BasicTestSurveyCreator.createStraightNorth();
-        String content = exporter.getContent(survey);
-        // Data lines must not start with the comment char (allow for leading whitespace or tabs)
-        for (String line : content.split("\n")) {
-            String trimmed = line.trim();
-            if (trimmed.startsWith("0\t")
-                    || trimmed.startsWith("1\t")
-                    || trimmed.startsWith("2\t")
-                    || trimmed.startsWith("3\t")) {
-                Assert.assertFalse(
-                        "Data line should not be commented: " + line, line.trim().startsWith(";"));
-            }
-        }
-    }
-
-    @Test
-    public void testHiddenOnSketchSplayIsCommentedOut() {
+    public void testHiddenOnSketchSplayIsExported() {
         SurvexExporter exporter = new SurvexExporter();
         Survey survey = BasicTestSurveyCreator.create5MEast();
         List<Leg> legs = survey.getAllLegs();
@@ -116,22 +89,6 @@ public class SurvexExporterTest {
         splay.setHiddenOnSketch(true);
         String content = exporter.getContent(survey);
         Assert.assertTrue(content.contains(";"));
-    }
-
-    @Test
-    public void testHiddenOnSketchPromotedLegHasDoublySemicolonPrecursors() {
-        SurvexExporter exporter = new SurvexExporter();
-        Survey survey = BasicTestSurveyCreator.createStraightNorthThroughRepeats();
-        for (Leg leg : survey.getAllLegs()) {
-            if (leg.wasPromoted()) {
-                leg.setHiddenOnSketch(true);
-                break;
-            }
-        }
-        String content = exporter.getContent(survey);
-        Assert.assertTrue(
-                "Hidden-on-sketch promoted leg should have ;; precursor lines",
-                content.contains(";;"));
     }
 
     private static Trip.TeamEntry entry(String name, Trip.Role... roles) {

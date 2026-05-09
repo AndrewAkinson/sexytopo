@@ -88,6 +88,7 @@ public class SurveyUpdater {
         Station newStation = new Station(getNextStationName(survey));
 
         Leg newLeg = Leg.toFullLeg(leg, newStation);
+        newLeg.setHiddenOnSketch(false);
 
         if (inputMode == InputMode.BACKWARD) {
             newLeg = newLeg.reverse();
@@ -147,8 +148,11 @@ public class SurveyUpdater {
                         Arrays.asList(leg.wasPromoted() ? leg.getPromotedFrom() : new Leg[] {leg}));
         allShots.add(splay);
 
-        return Leg.upgradeSplayToConnectedLeg(
-                averageLegs(allShots), leg.getDestination(), allShots.toArray(new Leg[0]));
+        Leg result =
+                Leg.upgradeSplayToConnectedLeg(
+                        averageLegs(allShots), leg.getDestination(), allShots.toArray(new Leg[0]));
+        result.setHiddenOnSketch(false);
+        return result;
     }
 
     private static synchronized String getNextStationName(Survey survey) {

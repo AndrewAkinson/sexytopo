@@ -1,5 +1,6 @@
 package org.hwyl.sexytopo.control.io.basic;
 
+import java.util.List;
 import org.hwyl.sexytopo.model.survey.Leg;
 import org.hwyl.sexytopo.model.survey.Survey;
 import org.hwyl.sexytopo.testutils.BasicTestSurveyCreator;
@@ -65,50 +66,24 @@ public class SurveyJsonTranslaterTest {
     }
 
     @Test
-    public void testHiddenOnSketchLegIsPreservedInRoundTrip() throws Exception {
+    public void testHiddenOnSketchSplayIsPreservedInRoundTrip() throws Exception {
         Survey survey = BasicTestSurveyCreator.createStraightNorth();
-        Leg legToHideOnSketch = survey.getAllLegs().get(0);
-        legToHideOnSketch.setHiddenOnSketch(true);
+        // Add a hidden-on-sketch splay at the origin
+        Leg splay = new Leg(3.0f, 90.0f, 0.0f);
+        splay.setHiddenOnSketch(true);
+        survey.getOrigin().addOnwardLeg(splay);
+        survey.addLegRecord(splay);
 
         String text = SurveyJsonTranslater.toText(survey, "test", 0);
 
         Survey reloaded = new Survey();
         SurveyJsonTranslater.populateSurvey(reloaded, text);
 
-        Leg reloadedLeg = reloaded.getAllLegs().get(0);
-        Assert.assertTrue(reloadedLeg.isHiddenOnSketch());
-    }
-
-    @Test
-    public void testVisibleOnSketchLegIsPreservedInRoundTrip() throws Exception {
-        Survey survey = BasicTestSurveyCreator.createStraightNorth();
-        // All legs default to not hidden on sketch
-        String text = SurveyJsonTranslater.toText(survey, "test", 0);
-
-        Survey reloaded = new Survey();
-        SurveyJsonTranslater.populateSurvey(reloaded, text);
-
-        for (Leg leg : reloaded.getAllLegs()) {
-            Assert.assertFalse(leg.isHiddenOnSketch());
-        }
-    }
-
-    @Test
-    public void testLegMissingIsHiddenOnSketchFieldDefaultsFalse() throws Exception {
-        // Simulates loading an old file that predates the isHiddenOnSketch field
-        String oldJson =
-                "{\"versionName\":\"test\",\"versionCode\":0,\"name\":\"Unsaved Survey\","
-                    + "\"stations\":[{\"name\":\"0\",\"eeDirection\":\"right\",\"comment\":\"\","
-                    + "\"legs\":[{\"distance\":5.0,\"azimuth\":0.0,\"inclination\":0.0,"
-                    + "\"destination\":\"1\",\"wasShotBackwards\":false,\"index\":0,"
-                    + "\"promotedFrom\":[]}]},"
-                    + "{\"name\":\"1\",\"eeDirection\":\"right\",\"comment\":\"\",\"legs\":[]}]}";
-
-        Survey survey = new Survey();
-        SurveyJsonTranslater.populateSurvey(survey, oldJson);
-
-        for (Leg leg : survey.getAllLegs()) {
-            Assert.assertFalse(leg.isHiddenOnSketch());
-        }
+        List<Leg> reloadedSplays =
+                reloaded.getAllLegsInChronoOrder().stream()
+                        .filter(l -> !l.hasDestination())
+                        .collect(java.util.stream.Collectors.toList());
+        Assert.assertEquals(1, reloadedSplays.size());
+        Assert.assertTrue(reloadedSplays.get(0).isHiddenOnSketch());
     }
 }

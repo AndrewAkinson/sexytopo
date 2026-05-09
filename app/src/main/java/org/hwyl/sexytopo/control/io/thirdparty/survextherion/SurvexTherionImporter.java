@@ -44,24 +44,30 @@ public class SurvexTherionImporter {
                 continue;
             }
 
-            // Detect hidden-on-sketch legs: a single comment char followed by 5+ data fields.
-            // Double comment chars (;;/##) are promoted-from precursors — leave those to
-            // parseCommentedNewLinePromotedLegs.
+            // Detect commented lines — single comment char followed by data fields.
+            // Double comment chars (;;/##) are promoted-from precursors consumed by
+            // parseCommentedNewLinePromotedLegs; skip them here.
             boolean isHiddenOnSketch = false;
             if (trimmed.startsWith(";") || trimmed.startsWith("#")) {
                 boolean isDouble = trimmed.length() > 1 && trimmed.charAt(1) == trimmed.charAt(0);
                 if (isDouble) {
-                    continue; // Double-commented precursor line — skip here
+                    continue; // Double-commented precursor line — skip
                 }
                 String afterComment = trimmed.substring(1).trim();
                 String[] parts = afterComment.split("\\s+");
-                if (parts.length >= 5 && looksLikeDataLine(parts)) {
-                    // Single-commented data line — a hidden-on-sketch leg
-                    isHiddenOnSketch = true;
-                    line = afterComment; // strip the leading comment char for field parsing
-                    trimmed = afterComment;
+                if (parts.length >= 5) {
+                    // Only import as hidden if it is a splay (to == "-").
+                    // Commented-out real legs are not supported and are skipped.
+                    boolean isSplayLine = parts[1].equals(SexyTopoConstants.BLANK_STATION_NAME);
+                    if (isSplayLine) {
+                        isHiddenOnSketch = true;
+                        line = afterComment;
+                        trimmed = afterComment;
+                    } else {
+                        continue; // Commented-out real leg — skip
+                    }
                 } else {
-                    continue; // Plain comment, skip
+                    continue; // Plain comment — skip
                 }
             }
 
@@ -73,8 +79,8 @@ public class SurvexTherionImporter {
 
                 // Check for commented new-line promoted legs in subsequent lines.
                 // The method returns both the legs and how many lines it consumed, so
-                // we can advance lineIndex past them and avoid re-processing them as
-                // hidden-on-sketch legs in the main loop.
+                // we can advance lineIndex past them and avoid re-processing them in
+                // the main loop.
                 CommentedNewLineResult promotedResult =
                         parseCommentedNewLinePromotedLegs(lines, lineIndex, fields[0], fields[1]);
 
@@ -466,7 +472,7 @@ public class SurvexTherionImporter {
             }
         }
 
-        leg.setHiddenOnSketch(hiddenOnSketch);
+        leg.setHiddenOnSketch(isSplay && hiddenOnSketch);
         legFrom.addOnwardLeg(leg);
         survey.addLegRecord(leg);
         survey.setActiveStation(legFrom);
@@ -563,21 +569,6 @@ public class SurvexTherionImporter {
         }
 
         return new CommentedNewLineResult(shots, linesConsumed);
-    }
-
-    /**
-     * Returns true if the first five elements of parts look like a data line: fields[0] and [1] are
-     * non-numeric (station names), fields[2..4] are floats.
-     */
-    private static boolean looksLikeDataLine(String[] parts) {
-        try {
-            Float.parseFloat(parts[2]);
-            Float.parseFloat(parts[3]);
-            Float.parseFloat(parts[4]);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 
     private static String extractCommentInstructions(String comment) {

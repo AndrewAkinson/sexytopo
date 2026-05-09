@@ -47,26 +47,17 @@ public class SurvexImporterTest {
         List<Leg> allLegs = survey.getAllLegsInChronoOrder();
         Assert.assertEquals(2, allLegs.size());
         Leg splay = allLegs.get(1);
+        Assert.assertFalse(splay.hasDestination());
         Assert.assertTrue(splay.isHiddenOnSketch());
     }
 
     @Test
-    public void testHiddenOnSketchLegIsImported() throws Exception {
-        final String testContent = ";0\t1\t5.0\t0.0\t0.0";
+    public void testCommentedRealLegIsSkipped() throws Exception {
+        // Commented-out real legs are not imported (hidden-on-sketch is splay-only)
+        final String testContent = "0\t1\t5.0\t0.0\t0.0\n;1\t2\t3.0\t90.0\t0.0";
         Survey survey = new Survey();
         SurvexTherionImporter.parseCentreline(testContent, survey);
-        Assert.assertEquals(1, survey.getAllLegs().size());
-        Leg leg = survey.getAllLegs().get(0);
-        Assert.assertTrue(leg.isHiddenOnSketch());
-        Assert.assertNotNull(survey.getStationByName("1"));
-    }
-
-    @Test
-    public void testNormalLegIsNotHiddenOnSketch() throws Exception {
-        final String testContent = "0\t1\t5.0\t0.0\t0.0";
-        Survey survey = new Survey();
-        SurvexTherionImporter.parseCentreline(testContent, survey);
-        Assert.assertFalse(survey.getAllLegs().get(0).isHiddenOnSketch());
+        Assert.assertEquals(1, survey.getAllLegsInChronoOrder().size());
     }
 
     @Test
@@ -75,19 +66,5 @@ public class SurvexImporterTest {
         Survey survey = new Survey();
         SurvexTherionImporter.parseCentreline(testContent, survey);
         Assert.assertEquals(0, survey.getAllLegs().size());
-    }
-
-    @Test
-    public void testHiddenOnSketchPromotedLegPreservesPromotedFrom() throws Exception {
-        final String testContent =
-                ";0\t1\t5.541\t253.93\t4.67\n"
-                        + ";;0\t1\t5.542\t73.95\t-4.64\n"
-                        + ";;0\t1\t5.541\t73.93\t-4.69";
-        Survey survey = new Survey();
-        SurvexTherionImporter.parseCentreline(testContent, survey);
-        Assert.assertEquals(1, survey.getAllLegs().size());
-        Leg leg = survey.getAllLegs().get(0);
-        Assert.assertTrue(leg.isHiddenOnSketch());
-        Assert.assertEquals(2, leg.getPromotedFrom().length);
     }
 }

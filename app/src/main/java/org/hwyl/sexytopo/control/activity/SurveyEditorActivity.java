@@ -84,6 +84,9 @@ public abstract class SurveyEditorActivity extends SexyTopoActivity {
     }
 
     public void onHideOnSketchLeg(Leg leg) {
+        if (leg == null || leg.hasDestination()) {
+            return;
+        }
         leg.setHiddenOnSketch(!leg.isHiddenOnSketch());
         getSurvey().setSaved(false);
         getSurveyManager().broadcastSurveyUpdated();

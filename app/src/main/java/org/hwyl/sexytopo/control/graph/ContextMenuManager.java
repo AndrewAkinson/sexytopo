@@ -194,7 +194,8 @@ public class ContextMenuManager {
 
                 MenuItem hideOnSketchItem = menu.findItem(R.id.action_hide_on_sketch_leg);
                 if (hideOnSketchItem != null) {
-                    hideOnSketchItem.setChecked(currentLeg.isHiddenOnSketch());
+                    hideOnSketchItem.setEnabled(isSplay);
+                    hideOnSketchItem.setChecked(isSplay && currentLeg.isHiddenOnSketch());
                 }
                 if (legMenuItem != null) {
                     legMenuItem.setTitle(R.string.menu_incoming_leg);

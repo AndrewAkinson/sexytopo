@@ -182,7 +182,6 @@ public class SurvexTherionUtil {
             toName = format.getSplayStationName();
         }
 
-        // Prefix the main leg line with the comment character if it is hidden on sketch
         char commentChar = format.getCommentChar();
         if (leg.isHiddenOnSketch()) {
             builder.append(commentChar);
@@ -195,16 +194,12 @@ public class SurvexTherionUtil {
         formatField(builder, TableCol.INCLINATION.format(leg.getInclination(), Locale.UK));
 
         // Handle promoted legs - put readings on subsequent lines.
-        // If the parent leg is hidden on sketch, precursors get two comment chars instead of one.
+        // Precursor lines always use a single comment char.
         if (leg.wasPromoted()) {
-            String precursorPrefix =
-                    leg.isHiddenOnSketch()
-                            ? String.valueOf(commentChar) + commentChar
-                            : String.valueOf(commentChar);
             Leg[] precursors = leg.getPromotedFrom();
             for (Leg precursor : precursors) {
                 builder.append("\n");
-                builder.append(precursorPrefix);
+                builder.append(commentChar);
                 builder.append(fromName).append("\t");
                 builder.append(toName).append("\t");
                 builder.append(TableCol.DISTANCE.format(precursor.getDistance(), Locale.UK))

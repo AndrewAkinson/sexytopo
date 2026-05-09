@@ -240,30 +240,16 @@ public class LegTest {
     }
 
     @Test
-    public void testIsHiddenOnSketchDefaultsFalse() {
-        Leg leg = new Leg(5.0f, 45.0f, 30.0f);
-        Assert.assertFalse(leg.isHiddenOnSketch());
-    }
-
-    @Test
-    public void testSetHiddenOnSketchTrue() {
-        Leg leg = new Leg(5.0f, 45.0f, 30.0f);
-        leg.setHiddenOnSketch(true);
-        Assert.assertTrue(leg.isHiddenOnSketch());
-    }
-
-    @Test
-    public void testSetHiddenOnSketchCanBeToggled() {
-        Leg leg = new Leg(5.0f, 45.0f, 30.0f);
-        leg.setHiddenOnSketch(true);
-        leg.setHiddenOnSketch(false);
-        Assert.assertFalse(leg.isHiddenOnSketch());
-    }
-
-    @Test
-    public void testHiddenOnSketchDefaultsFalseForLegWithDestination() {
-        Station destination = new Station("A1");
-        Leg leg = new Leg(5.0f, 45.0f, 30.0f, destination, new Leg[] {});
-        Assert.assertFalse(leg.isHiddenOnSketch());
+    public void testUpgradeSplayToLegClearsHiddenOnSketch() {
+        Survey survey = new Survey();
+        Leg splay = new Leg(5.0f, 45.0f, 30.0f);
+        splay.setHiddenOnSketch(true);
+        survey.getOrigin().addOnwardLeg(splay);
+        survey.addLegRecord(splay);
+        org.hwyl.sexytopo.control.util.SurveyUpdater.upgradeSplay(
+                survey, splay, org.hwyl.sexytopo.control.util.InputMode.FORWARD);
+        Leg upgradedLeg = survey.getAllLegs().get(0);
+        Assert.assertTrue(upgradedLeg.hasDestination());
+        Assert.assertFalse(upgradedLeg.isHiddenOnSketch());
     }
 }

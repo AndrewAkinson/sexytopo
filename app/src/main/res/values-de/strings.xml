@@ -583,6 +583,8 @@
     <string name="menu_upgrade_splay">Zu Messstrecke aufwerten</string>
     <string name="menu_downgrade_leg">Zu Splay abwerten</string>
     <string name="menu_delete_leg">Löschen</string>
+    <string name="menu_show_readings">Messungen anzeigen</string>
+    <string name="dialog_readings_close">Schließen</string>
     <string name="menu_delete_splay">Dimension oder Hilfslinie löschen</string>
     <string name="menu_elevation">Aufriss</string>
     <string name="menu_draw_left">Links zeichnen</string>

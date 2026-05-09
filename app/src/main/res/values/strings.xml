@@ -617,6 +617,8 @@
     <string name="toast_no_leg_above">No valid leg to combine with</string>
     <string name="menu_upgrade_splay">Upgrade to Leg</string>
     <string name="menu_downgrade_leg">Downgrade to Splay</string>
+    <string name="menu_show_readings">Show readings</string>
+    <string name="dialog_readings_close">Close</string>
     <string name="menu_delete_leg">Delete</string>
     <string name="menu_delete_splay">Delete Splay</string>
     <string name="menu_elevation">Elevation</string>

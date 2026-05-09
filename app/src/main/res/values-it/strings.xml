@@ -583,6 +583,8 @@
     <string name="menu_upgrade_splay">Promuovi a Tratto</string>
     <string name="menu_downgrade_leg">Declassa a Splay</string>
     <string name="menu_delete_leg">Elimina</string>
+    <string name="menu_show_readings">Mostra misurazioni</string>
+    <string name="dialog_readings_close">Chiudi</string>
     <string name="menu_delete_splay">Elimina Splay</string>
     <string name="menu_elevation">Elevazione</string>
     <string name="menu_draw_left">Disegna Sinistra</string>

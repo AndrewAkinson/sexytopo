@@ -585,6 +585,8 @@
     <string name="menu_upgrade_splay">Convertir en visée directionnelle</string>
     <string name="menu_downgrade_leg">Convertir en visée rayonnante</string>
     <string name="menu_delete_leg">Supprimer</string>
+    <string name="menu_show_readings">Afficher les mesures</string>
+    <string name="dialog_readings_close">Fermer</string>
     <string name="menu_delete_splay">Supprimer la radiale</string>
     <string name="menu_elevation">Élévation</string>
     <string name="menu_draw_left">Dessiner à gauche</string>

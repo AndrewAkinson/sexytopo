@@ -28,7 +28,7 @@
             android:visible="false"/>
 
         <item
-            android:id="@+id/action_cross_out_leg"
+            android:id="@+id/action_hide_on_sketch_leg"
             android:title="@string/menu_hide_on_sketches"
             android:checkable="true"/>
 

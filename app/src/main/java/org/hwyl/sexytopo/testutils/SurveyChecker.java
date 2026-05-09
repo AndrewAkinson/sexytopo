@@ -63,7 +63,7 @@ public class SurveyChecker {
             if (!oneLegs.get(i).toString().equals(twoLegs.get(i).toString())) {
                 return false;
             }
-            if (oneLegs.get(i).isCrossedOut() != twoLegs.get(i).isCrossedOut()) {
+            if (oneLegs.get(i).isHiddenOnSketch() != twoLegs.get(i).isHiddenOnSketch()) {
                 return false;
             }
         }

@@ -19,7 +19,7 @@ public class Leg extends SurveyComponent {
     private final Station destination;
     private final Leg[] promotedFrom;
     private final boolean wasShotBackwards;
-    private boolean crossedOut = false;
+    private boolean hiddenOnSketch = false;
 
     private static final Leg[] NO_LEGS = new Leg[] {};
 
@@ -202,12 +202,12 @@ public class Leg extends SurveyComponent {
         return MIN_INCLINATION <= inclination && inclination <= MAX_INCLINATION;
     }
 
-    public boolean isCrossedOut() {
-        return crossedOut;
+    public boolean isHiddenOnSketch() {
+        return hiddenOnSketch;
     }
 
-    public void setCrossedOut(boolean crossedOut) {
-        this.crossedOut = crossedOut;
+    public void setHiddenOnSketch(boolean hiddenOnSketch) {
+        this.hiddenOnSketch = hiddenOnSketch;
     }
 
     @NonNull

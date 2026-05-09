@@ -152,8 +152,8 @@ public class TableRowAdapter extends RecyclerView.Adapter<TableRowAdapter.TableR
                 textView.setTypeface(Typeface.DEFAULT);
             }
 
-            // Strikethrough for crossed-out legs
-            if (entry.getLeg().isCrossedOut()) {
+            // Strikethrough for legs hidden on sketch
+            if (entry.getLeg().isHiddenOnSketch()) {
                 textView.setPaintFlags(textView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             } else {
                 textView.setPaintFlags(textView.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);

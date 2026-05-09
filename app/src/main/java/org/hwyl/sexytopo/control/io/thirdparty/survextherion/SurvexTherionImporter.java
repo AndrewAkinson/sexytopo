@@ -44,21 +44,20 @@ public class SurvexTherionImporter {
                 continue;
             }
 
-            // Detect crossed-out legs: a single comment char followed by 5+ data fields.
+            // Detect hidden-on-sketch legs: a single comment char followed by 5+ data fields.
             // Double comment chars (;;/##) are promoted-from precursors — leave those to
             // parseCommentedNewLinePromotedLegs.
-            boolean isCrossedOut = false;
+            boolean isHiddenOnSketch = false;
             if (trimmed.startsWith(";") || trimmed.startsWith("#")) {
-                boolean isDouble = trimmed.length() > 1
-                        && trimmed.charAt(1) == trimmed.charAt(0);
+                boolean isDouble = trimmed.length() > 1 && trimmed.charAt(1) == trimmed.charAt(0);
                 if (isDouble) {
                     continue; // Double-commented precursor line — skip here
                 }
                 String afterComment = trimmed.substring(1).trim();
                 String[] parts = afterComment.split("\\s+");
                 if (parts.length >= 5 && looksLikeDataLine(parts)) {
-                    // Single-commented data line — a crossed-out leg
-                    isCrossedOut = true;
+                    // Single-commented data line — a hidden-on-sketch leg
+                    isHiddenOnSketch = true;
                     line = afterComment; // strip the leading comment char for field parsing
                     trimmed = afterComment;
                 } else {
@@ -72,12 +71,22 @@ public class SurvexTherionImporter {
 
                 String[] fields = trimmed.split("\\s+");
 
-                // Check for commented new lines promoted legs in subsequent lines
-                List<Leg> commentedNewLineLegs =
+                // Check for commented new-line promoted legs in subsequent lines.
+                // The method returns both the legs and how many lines it consumed, so
+                // we can advance lineIndex past them and avoid re-processing them as
+                // hidden-on-sketch legs in the main loop.
+                CommentedNewLineResult promotedResult =
                         parseCommentedNewLinePromotedLegs(lines, lineIndex, fields[0], fields[1]);
 
-                addLegToSurvey(survey, nameToStation, fields, comment, commentedNewLineLegs,
-                        isCrossedOut);
+                addLegToSurvey(
+                        survey,
+                        nameToStation,
+                        fields,
+                        comment,
+                        promotedResult.legs,
+                        isHiddenOnSketch);
+
+                lineIndex += promotedResult.linesConsumed;
 
             } catch (Exception exception) {
                 throw new Exception("Error importing this line: " + line);
@@ -374,7 +383,7 @@ public class SurvexTherionImporter {
             String[] fields,
             String comment,
             List<Leg> commentedNewLineLegs,
-            boolean crossedOut) {
+            boolean hiddenOnSketch) {
 
         String fromName = fields[0];
         String toName = fields[1];
@@ -457,7 +466,7 @@ public class SurvexTherionImporter {
             }
         }
 
-        leg.setCrossedOut(crossedOut);
+        leg.setHiddenOnSketch(hiddenOnSketch);
         legFrom.addOnwardLeg(leg);
         survey.addLegRecord(leg);
         survey.setActiveStation(legFrom);
@@ -495,10 +504,22 @@ public class SurvexTherionImporter {
      *
      * <p>Example: 1 2 5.541 253.93 4.67 #1 2 5.542 73.95 -4.64 #1 2 5.541 73.93 -4.69
      */
-    private static List<Leg> parseCommentedNewLinePromotedLegs(
+    /** Holds the result of parsing commented new-line promoted legs. */
+    private static class CommentedNewLineResult {
+        final List<Leg> legs;
+        final int linesConsumed;
+
+        CommentedNewLineResult(List<Leg> legs, int linesConsumed) {
+            this.legs = legs;
+            this.linesConsumed = linesConsumed;
+        }
+    }
+
+    private static CommentedNewLineResult parseCommentedNewLinePromotedLegs(
             String[] lines, int startIndex, String expectedFrom, String expectedTo) {
 
         List<Leg> shots = new ArrayList<>();
+        int linesConsumed = 0;
 
         // Look at subsequent lines
         for (int i = startIndex + 1; i < lines.length; i++) {
@@ -510,7 +531,7 @@ public class SurvexTherionImporter {
             }
 
             // Remove one or two leading comment characters.
-            // Precursors of a normal leg have one (;/# ); precursors of a crossed-out
+            // Precursors of a normal leg have one (;/#); precursors of a hidden-on-sketch
             // leg have two (;;/##). Strip them both the same way — we just need the data.
             String content;
             if (line.length() > 1 && line.charAt(1) == line.charAt(0)) {
@@ -530,8 +551,10 @@ public class SurvexTherionImporter {
                     float azimuth = Float.parseFloat(fields[3]);
                     float inclination = Float.parseFloat(fields[4]);
                     shots.add(new Leg(distance, azimuth, inclination));
+                    linesConsumed++;
                 } catch (NumberFormatException e) {
                     Log.e("Failed to parse commented new line promoted leg: " + line);
+                    break;
                 }
             } else {
                 // Different leg, stop looking
@@ -539,12 +562,12 @@ public class SurvexTherionImporter {
             }
         }
 
-        return shots;
+        return new CommentedNewLineResult(shots, linesConsumed);
     }
 
     /**
-     * Returns true if the first five elements of parts look like a data line:
-     * fields[0] and [1] are non-numeric (station names), fields[2..4] are floats.
+     * Returns true if the first five elements of parts look like a data line: fields[0] and [1] are
+     * non-numeric (station names), fields[2..4] are floats.
      */
     private static boolean looksLikeDataLine(String[] parts) {
         try {

@@ -30,7 +30,7 @@ public class Space3DTransformer {
     }
 
     protected synchronized void update(Space<Coord3D> space, Leg leg, Coord3D start) {
-        if (leg.isCrossedOut()) {
+        if (leg.isHiddenOnSketch()) {
             // Don't add the leg to the graph, but still traverse connected stations
             // so the rest of the survey tree remains reachable (destination plots at
             // the same position as the originating station)

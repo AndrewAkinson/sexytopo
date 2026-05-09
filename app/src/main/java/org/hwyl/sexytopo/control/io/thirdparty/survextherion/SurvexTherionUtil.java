@@ -182,9 +182,9 @@ public class SurvexTherionUtil {
             toName = format.getSplayStationName();
         }
 
-        // Prefix the main leg line with the comment character if it is crossed out
+        // Prefix the main leg line with the comment character if it is hidden on sketch
         char commentChar = format.getCommentChar();
-        if (leg.isCrossedOut()) {
+        if (leg.isHiddenOnSketch()) {
             builder.append(commentChar);
         }
 
@@ -195,11 +195,12 @@ public class SurvexTherionUtil {
         formatField(builder, TableCol.INCLINATION.format(leg.getInclination(), Locale.UK));
 
         // Handle promoted legs - put readings on subsequent lines.
-        // If the parent leg is crossed out, precursors get two comment chars instead of one.
+        // If the parent leg is hidden on sketch, precursors get two comment chars instead of one.
         if (leg.wasPromoted()) {
-            String precursorPrefix = leg.isCrossedOut()
-                    ? String.valueOf(commentChar) + commentChar
-                    : String.valueOf(commentChar);
+            String precursorPrefix =
+                    leg.isHiddenOnSketch()
+                            ? String.valueOf(commentChar) + commentChar
+                            : String.valueOf(commentChar);
             Leg[] precursors = leg.getPromotedFrom();
             for (Leg precursor : precursors) {
                 builder.append("\n");
@@ -210,8 +211,7 @@ public class SurvexTherionUtil {
                         .append("\t");
                 builder.append(TableCol.AZIMUTH.format(precursor.getAzimuth(), Locale.UK))
                         .append("\t");
-                builder.append(
-                        TableCol.INCLINATION.format(precursor.getInclination(), Locale.UK));
+                builder.append(TableCol.INCLINATION.format(precursor.getInclination(), Locale.UK));
             }
         }
     }

@@ -83,8 +83,8 @@ public abstract class SurveyEditorActivity extends SexyTopoActivity {
         invalidateView();
     }
 
-    public void onCrossOutLeg(Leg leg) {
-        leg.setCrossedOut(!leg.isCrossedOut());
+    public void onHideOnSketchLeg(Leg leg) {
+        leg.setHiddenOnSketch(!leg.isHiddenOnSketch());
         getSurvey().setSaved(false);
         getSurveyManager().broadcastSurveyUpdated();
         invalidateView();

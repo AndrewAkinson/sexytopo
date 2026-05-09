@@ -1,5 +1,6 @@
 package org.hwyl.sexytopo.control.io.thirdparty.survex;
 
+import java.util.List;
 import org.hwyl.sexytopo.control.io.thirdparty.survextherion.SurvexTherionImporter;
 import org.hwyl.sexytopo.model.survey.Leg;
 import org.hwyl.sexytopo.model.survey.Station;
@@ -38,31 +39,34 @@ public class SurvexImporterTest {
     }
 
     @Test
-    public void testCrossedOutSplayIsImported() throws Exception {
-        final String testContent = ";0\t-\t5.0\t90.0\t0.0";
+    public void testHiddenOnSketchSplayIsImported() throws Exception {
+        // A non-splay leg must come first to establish the survey origin; the splay follows
+        final String testContent = "0\t1\t5.0\t0.0\t0.0\n;1\t-\t2.0\t90.0\t0.0";
         Survey survey = new Survey();
         SurvexTherionImporter.parseCentreline(testContent, survey);
-        Assert.assertEquals(1, survey.getAllLegs().size());
-        Assert.assertTrue(survey.getAllLegs().get(0).isCrossedOut());
+        List<Leg> allLegs = survey.getAllLegsInChronoOrder();
+        Assert.assertEquals(2, allLegs.size());
+        Leg splay = allLegs.get(1);
+        Assert.assertTrue(splay.isHiddenOnSketch());
     }
 
     @Test
-    public void testCrossedOutLegIsImported() throws Exception {
+    public void testHiddenOnSketchLegIsImported() throws Exception {
         final String testContent = ";0\t1\t5.0\t0.0\t0.0";
         Survey survey = new Survey();
         SurvexTherionImporter.parseCentreline(testContent, survey);
         Assert.assertEquals(1, survey.getAllLegs().size());
         Leg leg = survey.getAllLegs().get(0);
-        Assert.assertTrue(leg.isCrossedOut());
+        Assert.assertTrue(leg.isHiddenOnSketch());
         Assert.assertNotNull(survey.getStationByName("1"));
     }
 
     @Test
-    public void testNormalLegIsNotCrossedOut() throws Exception {
+    public void testNormalLegIsNotHiddenOnSketch() throws Exception {
         final String testContent = "0\t1\t5.0\t0.0\t0.0";
         Survey survey = new Survey();
         SurvexTherionImporter.parseCentreline(testContent, survey);
-        Assert.assertFalse(survey.getAllLegs().get(0).isCrossedOut());
+        Assert.assertFalse(survey.getAllLegs().get(0).isHiddenOnSketch());
     }
 
     @Test
@@ -74,16 +78,16 @@ public class SurvexImporterTest {
     }
 
     @Test
-    public void testCrossedOutPromotedLegPreservesPromotedFrom() throws Exception {
+    public void testHiddenOnSketchPromotedLegPreservesPromotedFrom() throws Exception {
         final String testContent =
                 ";0\t1\t5.541\t253.93\t4.67\n"
-                + ";;0\t1\t5.542\t73.95\t-4.64\n"
-                + ";;0\t1\t5.541\t73.93\t-4.69";
+                        + ";;0\t1\t5.542\t73.95\t-4.64\n"
+                        + ";;0\t1\t5.541\t73.93\t-4.69";
         Survey survey = new Survey();
         SurvexTherionImporter.parseCentreline(testContent, survey);
         Assert.assertEquals(1, survey.getAllLegs().size());
         Leg leg = survey.getAllLegs().get(0);
-        Assert.assertTrue(leg.isCrossedOut());
+        Assert.assertTrue(leg.isHiddenOnSketch());
         Assert.assertEquals(2, leg.getPromotedFrom().length);
     }
 }

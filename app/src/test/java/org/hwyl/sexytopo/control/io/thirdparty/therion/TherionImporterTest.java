@@ -651,28 +651,34 @@ public class TherionImporterTest {
     }
 
     @Test
-    public void testCrossedOutLegSurvivesUpdateCentreline() throws Exception {
-        List<String> lines = Arrays.asList(
-                "centreline",
-                "data normal from to tape compass clino",
-                "#0\t1\t5.0\t0.0\t0.0",
-                "endcentreline");
+    public void testHiddenOnSketchLegSurvivesUpdateCentreline() throws Exception {
+        List<String> lines =
+                Arrays.asList(
+                        "centreline",
+                        "data normal from to tape compass clino",
+                        "#0\t1\t5.0\t0.0\t0.0",
+                        "endcentreline");
         Survey survey = new Survey();
         TherionImporter.updateCentreline(lines, survey);
         Assert.assertEquals(1, survey.getAllLegs().size());
-        Assert.assertTrue(survey.getAllLegs().get(0).isCrossedOut());
+        Assert.assertTrue(survey.getAllLegs().get(0).isHiddenOnSketch());
     }
 
     @Test
-    public void testCrossedOutSplaySurvivesUpdateCentreline() throws Exception {
-        List<String> lines = Arrays.asList(
-                "centreline",
-                "data normal from to tape compass clino",
-                "#0\t-\t5.0\t90.0\t0.0",
-                "endcentreline");
+    public void testHiddenOnSketchSplaySurvivesUpdateCentreline() throws Exception {
+        // A non-splay leg must come first to establish the survey origin; the splay follows
+        List<String> lines =
+                Arrays.asList(
+                        "centreline",
+                        "data normal from to tape compass clino",
+                        "0\t1\t5.0\t0.0\t0.0",
+                        "#1\t-\t5.0\t90.0\t0.0",
+                        "endcentreline");
         Survey survey = new Survey();
         TherionImporter.updateCentreline(lines, survey);
-        Assert.assertEquals(1, survey.getAllLegs().size());
-        Assert.assertTrue(survey.getAllLegs().get(0).isCrossedOut());
+        List<Leg> allLegs = survey.getAllLegsInChronoOrder();
+        Assert.assertEquals(2, allLegs.size());
+        Leg splay = allLegs.get(1);
+        Assert.assertTrue(splay.isHiddenOnSketch());
     }
 }

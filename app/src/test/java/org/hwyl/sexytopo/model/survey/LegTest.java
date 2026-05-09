@@ -240,30 +240,30 @@ public class LegTest {
     }
 
     @Test
-    public void testIsCrossedOutDefaultsFalse() {
+    public void testIsHiddenOnSketchDefaultsFalse() {
         Leg leg = new Leg(5.0f, 45.0f, 30.0f);
-        Assert.assertFalse(leg.isCrossedOut());
+        Assert.assertFalse(leg.isHiddenOnSketch());
     }
 
     @Test
-    public void testSetCrossedOutTrue() {
+    public void testSetHiddenOnSketchTrue() {
         Leg leg = new Leg(5.0f, 45.0f, 30.0f);
-        leg.setCrossedOut(true);
-        Assert.assertTrue(leg.isCrossedOut());
+        leg.setHiddenOnSketch(true);
+        Assert.assertTrue(leg.isHiddenOnSketch());
     }
 
     @Test
-    public void testSetCrossedOutCanBeToggled() {
+    public void testSetHiddenOnSketchCanBeToggled() {
         Leg leg = new Leg(5.0f, 45.0f, 30.0f);
-        leg.setCrossedOut(true);
-        leg.setCrossedOut(false);
-        Assert.assertFalse(leg.isCrossedOut());
+        leg.setHiddenOnSketch(true);
+        leg.setHiddenOnSketch(false);
+        Assert.assertFalse(leg.isHiddenOnSketch());
     }
 
     @Test
-    public void testCrossedOutDefaultsFalseForLegWithDestination() {
+    public void testHiddenOnSketchDefaultsFalseForLegWithDestination() {
         Station destination = new Station("A1");
         Leg leg = new Leg(5.0f, 45.0f, 30.0f, destination, new Leg[] {});
-        Assert.assertFalse(leg.isCrossedOut());
+        Assert.assertFalse(leg.isHiddenOnSketch());
     }
 }

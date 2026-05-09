@@ -65,10 +65,10 @@ public class SurveyJsonTranslaterTest {
     }
 
     @Test
-    public void testCrossedOutLegIsPreservedInRoundTrip() throws Exception {
+    public void testHiddenOnSketchLegIsPreservedInRoundTrip() throws Exception {
         Survey survey = BasicTestSurveyCreator.createStraightNorth();
-        Leg legToCrossOut = survey.getAllLegs().get(0);
-        legToCrossOut.setCrossedOut(true);
+        Leg legToHideOnSketch = survey.getAllLegs().get(0);
+        legToHideOnSketch.setHiddenOnSketch(true);
 
         String text = SurveyJsonTranslater.toText(survey, "test", 0);
 
@@ -76,38 +76,39 @@ public class SurveyJsonTranslaterTest {
         SurveyJsonTranslater.populateSurvey(reloaded, text);
 
         Leg reloadedLeg = reloaded.getAllLegs().get(0);
-        Assert.assertTrue(reloadedLeg.isCrossedOut());
+        Assert.assertTrue(reloadedLeg.isHiddenOnSketch());
     }
 
     @Test
-    public void testUncrossedLegIsPreservedInRoundTrip() throws Exception {
+    public void testVisibleOnSketchLegIsPreservedInRoundTrip() throws Exception {
         Survey survey = BasicTestSurveyCreator.createStraightNorth();
-        // All legs default to not crossed out
+        // All legs default to not hidden on sketch
         String text = SurveyJsonTranslater.toText(survey, "test", 0);
 
         Survey reloaded = new Survey();
         SurveyJsonTranslater.populateSurvey(reloaded, text);
 
         for (Leg leg : reloaded.getAllLegs()) {
-            Assert.assertFalse(leg.isCrossedOut());
+            Assert.assertFalse(leg.isHiddenOnSketch());
         }
     }
 
     @Test
-    public void testLegMissingIsCrossedOutFieldDefaultsFalse() throws Exception {
-        // Simulates loading an old file that predates the isCrossedOut field
-        String oldJson = "{\"versionName\":\"test\",\"versionCode\":0,\"name\":\"Unsaved Survey\","
-                + "\"stations\":[{\"name\":\"0\",\"eeDirection\":\"right\",\"comment\":\"\","
-                + "\"legs\":[{\"distance\":5.0,\"azimuth\":0.0,\"inclination\":0.0,"
-                + "\"destination\":\"1\",\"wasShotBackwards\":false,\"index\":0,"
-                + "\"promotedFrom\":[]}]},"
-                + "{\"name\":\"1\",\"eeDirection\":\"right\",\"comment\":\"\",\"legs\":[]}]}";
+    public void testLegMissingIsHiddenOnSketchFieldDefaultsFalse() throws Exception {
+        // Simulates loading an old file that predates the isHiddenOnSketch field
+        String oldJson =
+                "{\"versionName\":\"test\",\"versionCode\":0,\"name\":\"Unsaved Survey\","
+                    + "\"stations\":[{\"name\":\"0\",\"eeDirection\":\"right\",\"comment\":\"\","
+                    + "\"legs\":[{\"distance\":5.0,\"azimuth\":0.0,\"inclination\":0.0,"
+                    + "\"destination\":\"1\",\"wasShotBackwards\":false,\"index\":0,"
+                    + "\"promotedFrom\":[]}]},"
+                    + "{\"name\":\"1\",\"eeDirection\":\"right\",\"comment\":\"\",\"legs\":[]}]}";
 
         Survey survey = new Survey();
         SurveyJsonTranslater.populateSurvey(survey, oldJson);
 
         for (Leg leg : survey.getAllLegs()) {
-            Assert.assertFalse(leg.isCrossedOut());
+            Assert.assertFalse(leg.isHiddenOnSketch());
         }
     }
 }

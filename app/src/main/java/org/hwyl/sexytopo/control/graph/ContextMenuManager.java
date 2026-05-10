@@ -173,17 +173,22 @@ public class ContextMenuManager {
             MenuItem downgradeItem = menu.findItem(R.id.action_downgrade_leg);
             MenuItem reverseItem = menu.findItem(R.id.action_reverse);
             MenuItem showReadingsItem = menu.findItem(R.id.action_show_readings);
+            MenuItem editLegItem = menu.findItem(R.id.action_edit_leg);
             MenuItem legMenuItem = menu.findItem(R.id.menu_leg);
 
             if (currentLeg != null) {
                 boolean isSplay = !currentLeg.hasDestination();
+                boolean hasMultipleReadings =
+                        currentLeg.wasPromoted() && currentLeg.getPromotedFrom().length > 1;
                 if (upgradeItem != null) upgradeItem.setVisible(isSplay);
                 if (promoteItem != null) promoteItem.setVisible(isSplay);
                 if (reverseItem != null) reverseItem.setVisible(!isSplay);
                 if (showReadingsItem != null) {
                     showReadingsItem.setVisible(!isSplay);
-                    showReadingsItem.setEnabled(
-                            currentLeg.wasPromoted() && currentLeg.getPromotedFrom().length > 1);
+                    showReadingsItem.setEnabled(hasMultipleReadings);
+                }
+                if (editLegItem != null) {
+                    editLegItem.setEnabled(!hasMultipleReadings);
                 }
                 if (downgradeItem != null) {
                     boolean canDowngrade =

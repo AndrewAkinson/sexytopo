@@ -178,7 +178,15 @@ public abstract class SurveyEditorActivity extends SexyTopoActivity {
             return;
         }
 
-        LegReadingsDialog.show(this, fromStation, leg);
+        LegReadingsDialog.show(
+                this,
+                getSurvey(),
+                fromStation,
+                leg,
+                () -> {
+                    getSurveyManager().broadcastSurveyUpdated();
+                    invalidateView();
+                });
     }
 
     public void onDeleteStation(Station station) {

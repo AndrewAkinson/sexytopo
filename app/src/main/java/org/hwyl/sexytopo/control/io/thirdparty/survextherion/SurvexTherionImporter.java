@@ -44,20 +44,13 @@ public class SurvexTherionImporter {
                 continue;
             }
 
-            // Detect commented lines — single comment char followed by data fields.
-            // Double comment chars (;;/##) are promoted-from precursors consumed by
-            // parseCommentedNewLinePromotedLegs; skip them here.
+            // Detect commented splay — these are hidden-on-sketch splays.
             boolean isHiddenOnSketch = false;
             if (trimmed.startsWith(";") || trimmed.startsWith("#")) {
-                boolean isDouble = trimmed.length() > 1 && trimmed.charAt(1) == trimmed.charAt(0);
-                if (isDouble) {
-                    continue; // Double-commented precursor line — skip
-                }
                 String afterComment = trimmed.substring(1).trim();
                 String[] parts = afterComment.split("\\s+");
                 if (parts.length >= 5) {
                     // Only import as hidden if it is a splay (to == "-").
-                    // Commented-out real legs are not supported and are skipped.
                     boolean isSplayLine = parts[1].equals(SexyTopoConstants.BLANK_STATION_NAME);
                     if (isSplayLine) {
                         isHiddenOnSketch = true;
@@ -536,15 +529,8 @@ public class SurvexTherionImporter {
                 break;
             }
 
-            // Remove one or two leading comment characters.
-            // Precursors of a normal leg have one (;/#); precursors of a hidden-on-sketch
-            // leg have two (;;/##). Strip them both the same way — we just need the data.
-            String content;
-            if (line.length() > 1 && line.charAt(1) == line.charAt(0)) {
-                content = line.substring(2).trim();
-            } else {
-                content = line.substring(1).trim();
-            }
+            // Precursor lines always use a single comment char.
+            String content = line.substring(1).trim();
             String[] fields = content.split("\\s+");
 
             // Check if this is a matching shot

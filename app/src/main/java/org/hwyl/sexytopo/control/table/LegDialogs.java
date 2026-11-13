@@ -111,7 +111,7 @@ public class LegDialogs {
                     if (!newFromStationName.equals(oldFromStationName)
                             && survey.isOrigin(fromStation)) {
                         // Just rename the origin station
-                        SurveyUpdater.renameOrigin(survey, newFromStationName);
+                        SurveyUpdater.renameStation(survey, survey.getOrigin(), newFromStationName);
                     }
 
                     fromStation.setComment(form.getUpdatedFromComment());
@@ -266,7 +266,8 @@ public class LegDialogs {
                         if (newFromStation == fromStation && survey.isOrigin(newFromStation)) {
                             // If the station hasn't changed and it is the origin, then just rename
                             // the origin
-                            SurveyUpdater.renameOrigin(survey, newFromStationName);
+                            SurveyUpdater.renameStation(
+                                    survey, survey.getOrigin(), newFromStationName);
                         } else {
                             SurveyUpdater.moveLeg(survey, edited, newFromStation);
                         }

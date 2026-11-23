@@ -118,6 +118,8 @@
     <string name="file_load_symbols_error">Falha ao carregar os símbolos</string>
     <string name="file_load_sketch_labels_error">Falha ao carregar as etiquetas do esboço</string>
     <string name="file_load_cross_sections_error">Falha ao carregar as secções transversais</string>
+    <string name="file_load_scans_error">Falha ao carregar as leituras do scanner: %s</string>
+    <string name="file_load_scan_line_error">Leitura na linha %1$d ignorada: %2$s</string>
     <string name="file_survey_saved">Guardado</string>
     <string name="file_save_autosaved">Gravação automática</string>
     <string name="file_save_autosave_error">Erro na gravação automática</string>
@@ -538,6 +540,8 @@
     <string name="settings_auto_reconnect_summary">Reconectar automaticamente se o instrumento se desconectar</string>
     <string name="settings_auto_reconnect_window_title">Limite de tempo de reconexão automática (minutos)</string>
     <string name="settings_auto_reconnect_window_summary">Por quanto tempo continuar tentando reconectar antes de pausar</string>
+    <string name="settings_section_scanner_title">Scanner de secções</string>
+    <string name="settings_section_scanner_summary">Mostrar as leituras lidar de um scanner de secções por trás das secções transversais</string>
     <string name="settings_leg_amalgamation_algorithm_title">Método de concordância de trechos</string>
     <string name="settings_leg_amalgamation_angular_name">Deltas angulares</string>
     <string name="settings_leg_amalgamation_angular_description">Distância, azimute e inclinação comparados e calculados em média separadamente. Pode rejeitar medições íngremes repetidas</string>

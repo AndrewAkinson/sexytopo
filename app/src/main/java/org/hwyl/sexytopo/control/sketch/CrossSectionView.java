@@ -3,11 +3,16 @@ package org.hwyl.sexytopo.control.sketch;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.util.AttributeSet;
+import androidx.core.content.ContextCompat;
+import java.util.List;
+import org.hwyl.sexytopo.R;
 import org.hwyl.sexytopo.control.util.Space2DUtils;
 import org.hwyl.sexytopo.model.geometry.Coord2D;
 import org.hwyl.sexytopo.model.geometry.Line;
 import org.hwyl.sexytopo.model.geometry.Projection2D;
+import org.hwyl.sexytopo.model.scan.SectionScan;
 import org.hwyl.sexytopo.model.sketch.CrossSection;
 import org.hwyl.sexytopo.model.survey.Leg;
 import org.hwyl.sexytopo.model.survey.LegFilter;
@@ -24,7 +29,12 @@ public class CrossSectionView extends SketchView {
     /** Fallback zoom when there are no splays to measure. */
     private static final float DEFAULT_FALLBACK_ZOOM = 60.0f;
 
+    private static final float SCAN_POINT_RADIUS_DP = 1.5f;
+
     private boolean autoFitted = false;
+
+    private SectionScan scan = null;
+    private final Paint scanPointPaint = new Paint();
 
     private CrossSection.Orientation orientation = CrossSection.Orientation.VERTICAL;
 
@@ -35,6 +45,14 @@ public class CrossSectionView extends SketchView {
 
     public CrossSectionView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        scanPointPaint.setStyle(Paint.Style.FILL);
+        scanPointPaint.setColor(ContextCompat.getColor(context, R.color.scanPoint));
+    }
+
+    /** The scanner's scan at this station, drawn behind the section, or null for none. */
+    public void setScan(SectionScan scan) {
+        this.scan = scan;
+        invalidate();
     }
 
     /** Tells the view which cross-section is being edited, so it can show it appropriately. */
@@ -81,6 +99,12 @@ public class CrossSectionView extends SketchView {
                 longestSplay = length;
             }
         }
+        if (longestSplay <= 0f && scan != null) {
+            for (Coord2D point : scan.getPointsInSection()) {
+                longestSplay =
+                        Math.max(longestSplay, Space2DUtils.getDistance(Coord2D.ORIGIN, point));
+            }
+        }
         if (longestSplay <= 0f) {
             setZoom(DEFAULT_FALLBACK_ZOOM);
             return;
@@ -102,10 +126,30 @@ public class CrossSectionView extends SketchView {
         updateViewBounds();
 
         drawGrid(canvas);
+        drawScan(canvas);
         drawSurvey(canvas);
         drawToolFeedback(canvas);
         drawLegend(canvas);
         drawCompass(canvas);
+    }
+
+    private void drawScan(Canvas canvas) {
+        if (scan == null) {
+            return;
+        }
+        SketchPaints.applyAntiAliasPreference(scanPointPaint);
+        float offsetX = viewport.getOffsetX();
+        float offsetY = viewport.getOffsetY();
+        float scale = viewport.getScale();
+        float radius = ScreenUnits.dpToPixels(SCAN_POINT_RADIUS_DP);
+        List<Coord2D> points = scan.getPointsInSection();
+        for (Coord2D point : points) {
+            canvas.drawCircle(
+                    (point.x - offsetX) * scale,
+                    (point.y - offsetY) * scale,
+                    radius,
+                    scanPointPaint);
+        }
     }
 
     protected ViewContext getViewContext() {

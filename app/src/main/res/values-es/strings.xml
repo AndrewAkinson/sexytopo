@@ -118,6 +118,8 @@
     <string name="file_load_symbols_error">No se pudieron cargar los símbolos</string>
     <string name="file_load_sketch_labels_error">No se pudieron cargar las etiquetas del croquis</string>
     <string name="file_load_cross_sections_error">No se pudieron cargar las secciones transversales</string>
+    <string name="file_load_scans_error">No se pudieron cargar los escaneos del escáner: %s</string>
+    <string name="file_load_scan_line_error">Escaneo de la línea %1$d omitido: %2$s</string>
     <string name="file_survey_saved">Guardado</string>
     <string name="file_save_autosaved">Autoguardado</string>
     <string name="file_save_autosave_error">Error en el autoguardado</string>
@@ -538,6 +540,8 @@
     <string name="settings_auto_reconnect_summary">Reconectar automáticamente si el instrumento se desconecta</string>
     <string name="settings_auto_reconnect_window_title">Límite de tiempo de reconexión automática (minutos)</string>
     <string name="settings_auto_reconnect_window_summary">Cuánto tiempo seguir intentando reconectar antes de pausar</string>
+    <string name="settings_section_scanner_title">Escáner de secciones</string>
+    <string name="settings_section_scanner_summary">Mostrar los escaneos lidar de un escáner de secciones detrás de las secciones transversales</string>
     <string name="settings_leg_amalgamation_algorithm_title">Método de concordancia de tramos</string>
     <string name="settings_leg_amalgamation_angular_name">Deltas angulares</string>
     <string name="settings_leg_amalgamation_angular_description">Distancia, azimut e inclinación se comparan y promedian por separado. Puede rechazar mediciones empinadas repetidas</string>

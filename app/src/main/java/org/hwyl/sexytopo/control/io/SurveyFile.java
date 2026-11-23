@@ -62,6 +62,9 @@ public class SurveyFile extends AbstractSurveyFile {
             new SurveyFileType(
                     SexyTopoConstants.EXT_ELEVATION_SKETCH_EXTENSION,
                     SexyTopoConstants.MIME_TYPE_JSON);
+    // written by the cross-section scanner, so not one of the files SexyTopo saves
+    public static final SurveyFileType SCANS =
+            new SurveyFileType(SexyTopoConstants.SCANS_EXTENSION);
     public static final SurveyFileType LOG =
             new SurveyFileType(SexyTopoConstants.LOG_EXTENSION, SexyTopoConstants.MIME_TYPE_JSON);
 

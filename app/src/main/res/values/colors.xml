@@ -117,6 +117,7 @@
     <color name="leg">@color/md_red</color>
     <color name="legLatest">@color/md_magenta</color>
     <color name="splay">@color/md_light_red</color>
+    <color name="scanPoint">@color/md_grey_400</color>
     <color name="crossSectionConnection">@color/md_silver</color>
     <color name="sketchDefault">@color/md_black</color>
     <color name="hotCorner">@color/md_grey</color>

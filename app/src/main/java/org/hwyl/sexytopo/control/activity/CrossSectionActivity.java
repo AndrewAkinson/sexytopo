@@ -6,11 +6,16 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import org.hwyl.sexytopo.R;
+import org.hwyl.sexytopo.control.Log;
+import org.hwyl.sexytopo.control.io.SurveyFile;
+import org.hwyl.sexytopo.control.io.basic.ScanJsonlTranslater;
 import org.hwyl.sexytopo.control.sketch.CrossSectionLabels;
 import org.hwyl.sexytopo.control.sketch.CrossSectionView;
+import org.hwyl.sexytopo.control.util.GeneralPreferences;
 import org.hwyl.sexytopo.model.geometry.Coord2D;
 import org.hwyl.sexytopo.model.geometry.Projection2D;
 import org.hwyl.sexytopo.model.geometry.Space;
+import org.hwyl.sexytopo.model.scan.SectionScan;
 import org.hwyl.sexytopo.model.sketch.CrossSectionDetail;
 import org.hwyl.sexytopo.model.sketch.PathDetail;
 import org.hwyl.sexytopo.model.sketch.Sketch;
@@ -77,10 +82,30 @@ public class CrossSectionActivity extends SketchActivity {
         Space<Coord2D> projection = originalDetail.getCrossSection().getProjection();
         sketchView.setProjection(projection);
         sketchView.setCrossSection(originalDetail.getCrossSection());
+        if (GeneralPreferences.isSectionScannerOn()) {
+            sketchView.setScan(loadScan(survey, station));
+        }
 
         setTitle(
                 CrossSectionLabels.getTitleResource(
                         originalDetail.getCrossSection().getOrientation()));
+    }
+
+    /** The scanner's scan at the station, or null if there isn't one or it can't be read. */
+    private SectionScan loadScan(Survey survey, Station station) {
+        if (!survey.hasHome()) {
+            return null;
+        }
+        try {
+            SurveyFile file = SurveyFile.SCANS.get(survey);
+            if (!file.exists(this)) {
+                return null;
+            }
+            return ScanJsonlTranslater.toScans(file.slurp(this)).get(station.getName());
+        } catch (Exception e) {
+            Log.e(R.string.file_load_scans_error, e.getMessage());
+            return null;
+        }
     }
 
     /** The sketch the cross-section lives in: elevation if asked for, otherwise the plan. */

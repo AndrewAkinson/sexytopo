@@ -118,6 +118,8 @@
     <string name="file_load_symbols_error">Błąd wczytywania symboli</string>
     <string name="file_load_sketch_labels_error">Błąd wczytywania etykiet szkicu</string>
     <string name="file_load_cross_sections_error">Błąd wczytywania przekrojów</string>
+    <string name="file_load_scans_error">Nie udało się wczytać skanów ze skanera: %s</string>
+    <string name="file_load_scan_line_error">Pominięto skan w wierszu %1$d: %2$s</string>
     <string name="file_survey_saved">Zapisano</string>
     <string name="file_save_autosaved">Autozapis wykonany</string>
     <string name="file_save_autosave_error">Błąd autozapisu</string>
@@ -538,6 +540,8 @@
     <string name="settings_auto_reconnect_summary">Połącz ponownie automatycznie, jeśli urządzenie się rozłączy</string>
     <string name="settings_auto_reconnect_window_title">Limit czasu automatycznego łączenia (minuty)</string>
     <string name="settings_auto_reconnect_window_summary">Jak długo próbować połączyć się ponownie przed wstrzymaniem</string>
+    <string name="settings_section_scanner_title">Skaner przekrojów</string>
+    <string name="settings_section_scanner_summary">Pokazuj skany lidarowe ze skanera przekrojów pod przekrojami</string>
     <string name="settings_leg_amalgamation_algorithm_title">Metoda zgodności ciągu</string>
     <string name="settings_leg_amalgamation_angular_name">Delty kątowe</string>
     <string name="settings_leg_amalgamation_angular_description">Odległość, azymut i nachylenie porównywane i uśredniane osobno. Może odrzucać powtórzone strome pomiary</string>

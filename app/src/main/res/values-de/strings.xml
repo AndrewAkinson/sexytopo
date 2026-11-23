@@ -118,6 +118,8 @@
     <string name="file_load_symbols_error">Laden von Symbolen fehlgeschlagen</string>
     <string name="file_load_sketch_labels_error">Laden von Skizzen-Beschriftungen fehlgeschlagen</string>
     <string name="file_load_cross_sections_error">Laden von Querschnitten fehlgeschlagen</string>
+    <string name="file_load_scans_error">Scans des Scanners konnten nicht geladen werden: %s</string>
+    <string name="file_load_scan_line_error">Scan in Zeile %1$d übersprungen: %2$s</string>
     <string name="file_survey_saved">Gespeichert</string>
     <string name="file_save_autosaved">Automatisch gesichert</string>
     <string name="file_save_autosave_error">Fehler beim automatischen Speichern</string>
@@ -538,6 +540,8 @@
     <string name="settings_auto_reconnect_summary">Automatisch wieder verbinden, wenn das Gerät die Verbindung verliert</string>
     <string name="settings_auto_reconnect_window_title">Zeitlimit für automatisches Wiederverbinden (Minuten)</string>
     <string name="settings_auto_reconnect_window_summary">Wie lange versucht wird, die Verbindung wiederherzustellen, bevor pausiert wird</string>
+    <string name="settings_section_scanner_title">Querschnitt-Scanner</string>
+    <string name="settings_section_scanner_summary">Lidar-Scans eines Querschnitt-Scanners hinter Querschnitten anzeigen</string>
     <string name="settings_leg_amalgamation_algorithm_title">Methode zur Streckenübereinstimmung</string>
     <string name="settings_leg_amalgamation_angular_name">Winkeldifferenzen</string>
     <string name="settings_leg_amalgamation_angular_description">Distanz, Azimut und Neigung werden getrennt verglichen und gemittelt. Kann wiederholte steile Messungen ablehnen</string>

@@ -118,6 +118,8 @@
     <string name="file_load_symbols_error">Impossible de charger les symboles</string>
     <string name="file_load_sketch_labels_error">Impossible de télécharger les noms d\'esquisse</string>
     <string name="file_load_cross_sections_error">Impossible de télécharger les sections transversales</string>
+    <string name="file_load_scans_error">Échec du chargement des scans du scanner : %s</string>
+    <string name="file_load_scan_line_error">Scan de la ligne %1$d ignoré : %2$s</string>
     <string name="file_survey_saved">Sauvegardé</string>
     <string name="file_save_autosaved">Sauvegardé automatiquement</string>
     <string name="file_save_autosave_error">Erreur lors de la sauvegarde automatique</string>
@@ -538,6 +540,8 @@
     <string name="settings_auto_reconnect_summary">Se reconnecter automatiquement si l\'appareil se déconnecte</string>
     <string name="settings_auto_reconnect_window_title">Délai de reconnexion automatique (minutes)</string>
     <string name="settings_auto_reconnect_window_summary">Combien de temps continuer à essayer de se reconnecter avant de mettre en pause</string>
+    <string name="settings_section_scanner_title">Scanner de coupes</string>
+    <string name="settings_section_scanner_summary">Afficher les scans lidar d\'un scanner de coupes derrière les coupes</string>
     <string name="settings_leg_amalgamation_algorithm_title">Méthode d\'accord des segments</string>
     <string name="settings_leg_amalgamation_angular_name">Deltas angulaires</string>
     <string name="settings_leg_amalgamation_angular_description">Distance, azimut et inclinaison comparés et moyennés séparément. Peut rejeter des mesures raides répétées</string>

@@ -52,6 +52,12 @@
         android:dependency="pref_auto_reconnect"
         android:defaultValue="15" />
 
+    <SwitchPreferenceCompat
+        android:key="pref_section_scanner"
+        android:title="@string/settings_section_scanner_title"
+        android:summary="@string/settings_section_scanner_summary"
+        android:defaultValue="false" />
+
     <ListPreference
         android:key="pref_calibration_algorithm"
         android:title="@string/settings_calibration_algorithm_title"

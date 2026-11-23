@@ -291,6 +291,10 @@ public class GeneralPreferences {
         editor.apply();
     }
 
+    public static boolean isSectionScannerOn() {
+        return getBoolean("pref_section_scanner", false);
+    }
+
     // ********** Calibration ***********
 
     public static String getCalibrationAlgorithm() {

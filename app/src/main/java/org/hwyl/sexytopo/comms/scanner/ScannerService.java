@@ -1,6 +1,9 @@
 package org.hwyl.sexytopo.comms.scanner;
 
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,10 +12,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import org.hwyl.sexytopo.R;
 import org.hwyl.sexytopo.SexyTopoConstants;
 import org.hwyl.sexytopo.control.Log;
 import org.hwyl.sexytopo.control.SurveyManager;
 import org.hwyl.sexytopo.control.activity.SexyTopoActivity;
+import org.hwyl.sexytopo.control.util.GeneralPreferences;
 import org.hwyl.sexytopo.model.survey.Survey;
 
 /**
@@ -81,7 +86,20 @@ public class ScannerService implements ScannerLink.Host {
         if (TEST_ADDRESS.equals(address)) {
             return new TestScannerConnection(this);
         }
-        return null; // Bluetooth comes in Link 4b
+        BluetoothManager manager =
+                (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothAdapter adapter = manager == null ? null : manager.getAdapter();
+        if (adapter == null || address == null) {
+            return null;
+        }
+        try {
+            BluetoothDevice device = adapter.getRemoteDevice(address);
+            return new BleScannerConnection(
+                    this, device, GeneralPreferences.getRememberedScannerName());
+        } catch (IllegalArgumentException e) { // not a valid address
+            log(R.string.device_scanner_error, e.getMessage());
+            return null;
+        }
     }
 
     public void disconnect() {

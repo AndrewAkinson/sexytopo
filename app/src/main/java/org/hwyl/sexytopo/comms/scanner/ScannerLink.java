@@ -76,7 +76,11 @@ public class ScannerLink {
         host.onStatusChanged();
     }
 
-    public void onDisconnected() {
+    /** Ignored if from a connection already replaced by another. */
+    public void onDisconnected(ScannerConnection from) {
+        if (from != connection) {
+            return;
+        }
         connection = null;
         ready = false;
         reader.clear();

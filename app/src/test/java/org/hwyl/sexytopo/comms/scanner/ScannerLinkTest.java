@@ -263,4 +263,16 @@ public class ScannerLinkTest {
         Assert.assertEquals(List.of("hello", "survey", "station_renamed"), connection.types());
         Assert.assertEquals("3a", connection.last().getString("to"));
     }
+
+    @Test
+    public void testOnlyTheCurrentConnectionCanDisconnect() throws Exception {
+        PretendConnection old = connection;
+        connectAndGreet();
+        connection = new PretendConnection();
+        connectAndGreet();
+        link.onDisconnected(old);
+        Assert.assertTrue(link.isReady());
+        link.onDisconnected(connection);
+        Assert.assertFalse(link.isReady());
+    }
 }

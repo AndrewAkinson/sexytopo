@@ -35,7 +35,7 @@ public class TestScannerConnection implements ScannerConnection {
     @Override
     public void disconnect() {
         connected = false;
-        service.runOnMainThread(() -> service.getLink().onDisconnected());
+        service.runOnMainThread(() -> service.getLink().onDisconnected(this));
     }
 
     @Override

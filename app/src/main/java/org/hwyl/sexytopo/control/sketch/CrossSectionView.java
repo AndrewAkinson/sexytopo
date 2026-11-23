@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import androidx.core.content.ContextCompat;
-import java.util.List;
 import org.hwyl.sexytopo.R;
 import org.hwyl.sexytopo.control.util.Space2DUtils;
 import org.hwyl.sexytopo.model.geometry.Coord2D;
@@ -29,7 +28,10 @@ public class CrossSectionView extends SketchView {
     /** Fallback zoom when there are no splays to measure. */
     private static final float DEFAULT_FALLBACK_ZOOM = 60.0f;
 
-    private static final float SCAN_POINT_RADIUS_DP = 1.5f;
+    private static final float SCAN_POINT_RADIUS_DP = 1f;
+
+    // zoomed out, a point closer than this to the last one drawn is skipped, so dots stay apart
+    private static final float SCAN_POINT_SPACING_DP = 4f;
 
     private boolean autoFitted = false;
 
@@ -142,13 +144,22 @@ public class CrossSectionView extends SketchView {
         float offsetY = viewport.getOffsetY();
         float scale = viewport.getScale();
         float radius = ScreenUnits.dpToPixels(SCAN_POINT_RADIUS_DP);
-        List<Coord2D> points = scan.getPointsInSection();
-        for (Coord2D point : points) {
-            canvas.drawCircle(
-                    (point.x - offsetX) * scale,
-                    (point.y - offsetY) * scale,
-                    radius,
-                    scanPointPaint);
+        float spacing = ScreenUnits.dpToPixels(SCAN_POINT_SPACING_DP);
+        float minSquared = spacing * spacing;
+        float lastX = Float.NaN;
+        float lastY = Float.NaN;
+        // the points are in angle order, so neighbours on screen are neighbours in the list
+        for (Coord2D point : scan.getPointsInSection()) {
+            float x = (point.x - offsetX) * scale;
+            float y = (point.y - offsetY) * scale;
+            float dx = x - lastX;
+            float dy = y - lastY;
+            if (dx * dx + dy * dy < minSquared) {
+                continue;
+            }
+            canvas.drawCircle(x, y, radius, scanPointPaint);
+            lastX = x;
+            lastY = y;
         }
     }
 

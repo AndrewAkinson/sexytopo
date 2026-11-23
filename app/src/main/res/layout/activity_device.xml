@@ -154,6 +154,116 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+        <!-- Cross-section scanner, shown only with its setting on -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/scannerCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/device_scanner_title"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textStyle="bold"
+                    android:paddingBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/scannerName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:paddingBottom="8dp" />
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="8dp">
+
+                    <Button
+                        android:id="@+id/scannerFindButton"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:text="@string/device_scanner_find"
+                        android:textSize="13sp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp" />
+
+                    <Button
+                        android:id="@+id/scannerForgetButton"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="@string/device_scanner_forget"
+                        android:textSize="13sp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        style="?attr/materialButtonOutlinedStyle" />
+
+                </LinearLayout>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/scannerConnectSwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/device_scanner_connect"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:checked="false" />
+
+                <TextView
+                    android:id="@+id/scannerStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:paddingTop="4dp" />
+
+                <!-- developer mode only -->
+                <LinearLayout
+                    android:id="@+id/scannerTestButtons"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="8dp"
+                    android:visibility="gone">
+
+                    <Button
+                        android:id="@+id/scannerUseTestButton"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:text="@string/device_scanner_use_test"
+                        android:textSize="13sp"
+                        style="?attr/materialButtonOutlinedStyle" />
+
+                    <Button
+                        android:id="@+id/scannerSendTestButton"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="@string/device_scanner_send_test_section"
+                        android:textSize="13sp"
+                        style="?attr/materialButtonOutlinedStyle" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Device Log Section -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"

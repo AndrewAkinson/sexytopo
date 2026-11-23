@@ -371,6 +371,30 @@
     <string name="device_fcl_command_take_shot">Prendre une mesure</string>
     <string name="device_fcl_command_laser_off">Laser éteint</string>
     <string name="device_fcl_command_device_off">Appareil éteint</string>
+    <string name="device_scanner_title">Scanner de coupes</string>
+    <string name="device_scanner_none">Aucun scanner choisi</string>
+    <string name="device_scanner_find">Rechercher</string>
+    <string name="device_scanner_forget">Oublier</string>
+    <string name="device_scanner_connect">Se connecter au scanner</string>
+    <string name="device_scanner_status_disconnected">Non connecté</string>
+    <string name="device_scanner_status_connected">Connecté à %1$s, firmware %2$s</string>
+    <string name="device_scanner_status_last_section">Dernier scan reçu %s</string>
+    <string name="device_scanner_use_test">Utiliser le scanner de test</string>
+    <string name="device_scanner_test_name">Scanner de test</string>
+    <string name="device_scanner_send_test_section">Envoyer une coupe de test</string>
+    <string name="device_scanner_searching">Recherche d\'un scanner</string>
+    <string name="device_scanner_found">Scanner %s trouvé</string>
+    <string name="device_scanner_hello">Scanner %1$s, firmware %2$s, prêt</string>
+    <string name="device_scanner_protocol_mismatch">Le scanner utilise le protocole %1$d et SexyTopo le %2$d, il a donc été déconnecté</string>
+    <string name="device_scanner_section_taken">Scan %1$s reçu à la station %2$s</string>
+    <string name="device_scanner_section_conflict">Le dessin du scan %1$s à la station %2$s a été modifié ici entre-temps, on demande donc lequel garder</string>
+    <string name="device_scanner_section_refused">Scan %1$s non reçu (%2$s)</string>
+    <string name="device_scanner_frame_dropped">Message illisible du scanner ignoré (%s)</string>
+    <string name="device_scanner_error">Erreur de liaison avec le scanner (%s)</string>
+    <string name="device_scanner_conflict_title">Dessin du scanner</string>
+    <string name="device_scanner_conflict_message">Le dessin à la station %1$s a été modifié ici depuis le dernier du scanner. Garder le dessin de SexyTopo ou utiliser celui du scan %2$s ?</string>
+    <string name="device_scanner_conflict_keep">Garder celui de SexyTopo</string>
+    <string name="device_scanner_conflict_use">Utiliser celui du scanner</string>
 
     <!-- Calibration -->
     <string name="calibration_title_mode">Mode calibration</string>

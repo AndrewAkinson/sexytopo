@@ -26,6 +26,10 @@ import org.hwyl.sexytopo.SexyTopoConstants;
 import org.hwyl.sexytopo.comms.Communicator;
 import org.hwyl.sexytopo.comms.Instrument;
 import org.hwyl.sexytopo.comms.InstrumentType;
+import org.hwyl.sexytopo.comms.scanner.ScannerConnection;
+import org.hwyl.sexytopo.comms.scanner.ScannerService;
+import org.hwyl.sexytopo.comms.scanner.ScannerType;
+import org.hwyl.sexytopo.comms.scanner.TestScannerConnection;
 import org.hwyl.sexytopo.control.Log;
 import org.hwyl.sexytopo.control.util.GeneralPreferences;
 import org.hwyl.sexytopo.control.util.LogUpdateReceiver;
@@ -43,6 +47,10 @@ public class DeviceActivity extends SexyTopoActivity {
     private DeviceLogUpdateReceiver logUpdateReceiver;
     private StateChangeReceiver stateChangeReceiver;
     private ScanReceiver scanReceiver;
+    private ScannerStatusReceiver scannerStatusReceiver;
+
+    // the Bluetooth search is for the scanner rather than the instrument
+    private boolean findingScanner = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +85,8 @@ public class DeviceActivity extends SexyTopoActivity {
         logFilter.addAction(SexyTopoConstants.DEVICE_LOG_UPDATED_EVENT);
 
         logUpdateReceiver = new DeviceLogUpdateReceiver();
+        scannerStatusReceiver = new ScannerStatusReceiver();
+        setupScannerListeners();
     }
 
     @SuppressLint("SourceLockedOrientationActivity")
@@ -93,6 +103,9 @@ public class DeviceActivity extends SexyTopoActivity {
 
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
         broadcastManager.registerReceiver(logUpdateReceiver, logFilter);
+        broadcastManager.registerReceiver(
+                scannerStatusReceiver, new IntentFilter(SexyTopoConstants.SCANNER_STATUS_EVENT));
+        updateScanner();
 
         if (!requestComms().isConnected()) {
             updateComms();
@@ -107,6 +120,7 @@ public class DeviceActivity extends SexyTopoActivity {
             unregisterReceiver(scanReceiver);
             LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
             broadcastManager.unregisterReceiver(logUpdateReceiver);
+            broadcastManager.unregisterReceiver(scannerStatusReceiver);
         } catch (Exception exception) { // this shouldn't ever happen
             Log.e("Error unregistering receiver: " + exception.getMessage());
         }
@@ -239,6 +253,7 @@ public class DeviceActivity extends SexyTopoActivity {
             bluetoothAdapter.cancelDiscovery();
 
         } else {
+            findingScanner = false;
             boolean started = bluetoothAdapter.startDiscovery();
             if (started) {
                 Log.device(R.string.device_scan_start);
@@ -430,6 +445,113 @@ public class DeviceActivity extends SexyTopoActivity {
         return null;
     }
 
+    private void setupScannerListeners() {
+        findViewById(R.id.scannerFindButton).setOnClickListener(view -> findScanner());
+        findViewById(R.id.scannerForgetButton)
+                .setOnClickListener(
+                        view -> {
+                            ScannerService.getInstance(this).disconnect();
+                            GeneralPreferences.forgetRememberedScanner();
+                            updateScanner();
+                        });
+        findViewById(R.id.scannerConnectSwitch)
+                .setOnClickListener(
+                        view -> {
+                            ScannerService service = ScannerService.getInstance(this);
+                            if (((SwitchCompat) view).isChecked()) {
+                                service.connect(GeneralPreferences.getRememberedScannerAddress());
+                            } else {
+                                service.disconnect();
+                            }
+                            updateScanner();
+                        });
+        findViewById(R.id.scannerUseTestButton)
+                .setOnClickListener(
+                        view -> {
+                            ScannerService.getInstance(this).disconnect();
+                            GeneralPreferences.setRememberedScanner(
+                                    ScannerService.TEST_ADDRESS,
+                                    getString(R.string.device_scanner_test_name));
+                            updateScanner();
+                        });
+        findViewById(R.id.scannerSendTestButton)
+                .setOnClickListener(
+                        view -> {
+                            ScannerConnection connection =
+                                    ScannerService.getInstance(this).getConnection();
+                            if (connection instanceof TestScannerConnection) {
+                                ((TestScannerConnection) connection).sendTestSection();
+                            }
+                        });
+    }
+
+    private void findScanner() throws SecurityException {
+        bluetoothAdapter = getBluetoothAdapter();
+        if (bluetoothAdapter == null) {
+            showSimpleToast(R.string.device_bluetooth_no_adapter);
+            return;
+        }
+        if (bluetoothAdapter.isDiscovering()) {
+            bluetoothAdapter.cancelDiscovery();
+        }
+        findingScanner = bluetoothAdapter.startDiscovery();
+        Log.device(
+                findingScanner ? R.string.device_scanner_searching : R.string.device_scan_failure);
+    }
+
+    /** Shows the scanner card, if the scanner setting is on, as the link now stands. */
+    private void updateScanner() {
+        boolean on = GeneralPreferences.isSectionScannerOn();
+        findViewById(R.id.scannerCard).setVisibility(on ? View.VISIBLE : View.GONE);
+        if (!on) {
+            if (ScannerService.getExisting() != null) {
+                ScannerService.getExisting().disconnect();
+            }
+            return;
+        }
+        ScannerService service = ScannerService.getInstance(this);
+        String address = GeneralPreferences.getRememberedScannerAddress();
+        String name = GeneralPreferences.getRememberedScannerName();
+        boolean connected = service.getConnection() != null;
+
+        TextView nameView = findViewById(R.id.scannerName);
+        nameView.setText(address == null ? getString(R.string.device_scanner_none) : name);
+        findViewById(R.id.scannerForgetButton).setEnabled(address != null);
+
+        SwitchCompat connectSwitch = findViewById(R.id.scannerConnectSwitch);
+        connectSwitch.setEnabled(address != null);
+        connectSwitch.setChecked(connected);
+
+        TextView status = findViewById(R.id.scannerStatus);
+        String text;
+        if (service.getLink().isReady()) {
+            text =
+                    getString(
+                            R.string.device_scanner_status_connected,
+                            service.getLink().getBoard(),
+                            service.getLink().getFirmware());
+            String last = service.getLink().getLastSection();
+            if (last != null) {
+                text += "\n" + getString(R.string.device_scanner_status_last_section, last);
+            }
+        } else {
+            text = getString(R.string.device_scanner_status_disconnected);
+        }
+        status.setText(text);
+
+        findViewById(R.id.scannerTestButtons)
+                .setVisibility(GeneralPreferences.isDevModeOn() ? View.VISIBLE : View.GONE);
+        findViewById(R.id.scannerSendTestButton)
+                .setEnabled(service.getConnection() instanceof TestScannerConnection);
+    }
+
+    private class ScannerStatusReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateScanner();
+        }
+    }
+
     private class StateChangeReceiver extends BroadcastReceiver {
 
         @Override
@@ -453,6 +575,18 @@ public class DeviceActivity extends SexyTopoActivity {
 
                 try {
                     String name = device.getName();
+                    // scanners and instruments are each only taken by their own search
+                    if (findingScanner) {
+                        if (ScannerType.isScanner(name)) {
+                            BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+                            Log.device(R.string.device_scanner_found, name);
+                            GeneralPreferences.setRememberedScanner(device.getAddress(), name);
+                            updateScanner();
+                        }
+                        return;
+                    } else if (ScannerType.isScanner(name)) {
+                        return;
+                    }
                     InstrumentType instrumentType = InstrumentType.byName(name);
                     if (instrumentType.isUsable()) {
                         Log.device(R.string.device_scan_detected, instrumentType.describe());
@@ -473,6 +607,7 @@ public class DeviceActivity extends SexyTopoActivity {
                     Log.device(R.string.device_access_failure);
                 }
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                findingScanner = false;
                 Log.device(R.string.device_scan_end);
             }
         }

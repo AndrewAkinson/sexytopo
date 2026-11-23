@@ -22,6 +22,8 @@ public class SexyTopoConstants {
     public static final String SYSTEM_LOG_UPDATED_EVENT = "systemLogUpdatedEvent";
     public static final String DEVICE_LOG_UPDATED_EVENT = "deviceLogUpdatedEvent";
     public static final String CALIBRATION_UPDATED_EVENT = "calibrationUpdatedEvent";
+    public static final String SCANNER_STATUS_EVENT = "scannerStatusEvent";
+    public static final String SCANNER_CONFLICT_EVENT = "scannerConflictEvent";
 
     // ********** Request codes **********
     public static final int REQUEST_CODE_SAVE_AS_SURVEY = 1000001;

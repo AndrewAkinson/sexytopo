@@ -427,6 +427,31 @@
     <string name="device_fcl_command_laser_off">Laser Off</string>
     <string name="device_fcl_command_device_off">Device Off</string>
 
+    <string name="device_scanner_title">Cross-section scanner</string>
+    <string name="device_scanner_none">No scanner chosen</string>
+    <string name="device_scanner_find">Find</string>
+    <string name="device_scanner_forget">Forget</string>
+    <string name="device_scanner_connect">Connect to scanner</string>
+    <string name="device_scanner_status_disconnected">Not connected</string>
+    <string name="device_scanner_status_connected">Connected to %1$s, firmware %2$s</string>
+    <string name="device_scanner_status_last_section">Last scan taken %s</string>
+    <string name="device_scanner_use_test">Use test scanner</string>
+    <string name="device_scanner_test_name">Test scanner</string>
+    <string name="device_scanner_send_test_section">Send test section</string>
+    <string name="device_scanner_searching">Looking for a scanner</string>
+    <string name="device_scanner_found">Found scanner %s</string>
+    <string name="device_scanner_hello">Scanner %1$s, firmware %2$s, ready</string>
+    <string name="device_scanner_protocol_mismatch">The scanner uses link protocol %1$d and SexyTopo uses %2$d, so it has been disconnected</string>
+    <string name="device_scanner_section_taken">Scan %1$s taken at station %2$s</string>
+    <string name="device_scanner_section_conflict">Scan %1$s at station %2$s has a drawing changed here since, so asking which to keep</string>
+    <string name="device_scanner_section_refused">Scan %1$s not taken (%2$s)</string>
+    <string name="device_scanner_frame_dropped">Unreadable message from the scanner dropped (%s)</string>
+    <string name="device_scanner_error">Scanner link error (%s)</string>
+    <string name="device_scanner_conflict_title">Scanner drawing</string>
+    <string name="device_scanner_conflict_message">The drawing at station %1$s has been changed here since the scanner\'s last one. Keep SexyTopo\'s drawing, or use the one with scan %2$s?</string>
+    <string name="device_scanner_conflict_keep">Keep SexyTopo\'s</string>
+    <string name="device_scanner_conflict_use">Use the scanner\'s</string>
+
     <!-- Calibration -->
     <string name="calibration_title_mode">Calibration Mode</string>
     <string name="calibration_title_readings">Readings</string>

@@ -62,6 +62,7 @@ import org.hwyl.sexytopo.control.SexyTopoPermissions;
 import org.hwyl.sexytopo.control.SurveyManager;
 import org.hwyl.sexytopo.control.components.DialogImportChooser;
 import org.hwyl.sexytopo.control.components.DialogUtils;
+import org.hwyl.sexytopo.control.components.ScannerConflictDialog;
 import org.hwyl.sexytopo.control.components.StationSelectorDialog;
 import org.hwyl.sexytopo.control.io.IoUtils;
 import org.hwyl.sexytopo.control.io.StartLocation;
@@ -120,6 +121,8 @@ public abstract class SexyTopoActivity extends AppCompatActivity {
                 }
             };
 
+    private final ScannerConflictDialog scannerConflictDialog = new ScannerConflictDialog(this);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -156,6 +159,7 @@ public abstract class SexyTopoActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        scannerConflictDialog.stop();
         // Not everything that changes the survey triggers an autosave (e.g. sketching), so catch
         // anything outstanding whenever a screen is left - including when leaving the app
         if (getSurvey() != null) {
@@ -215,6 +219,7 @@ public abstract class SexyTopoActivity extends AppCompatActivity {
         super.onResume();
         setTheme();
         setOrientation();
+        scannerConflictDialog.start();
     }
 
     @Override

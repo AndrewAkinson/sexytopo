@@ -291,6 +291,29 @@ public class GeneralPreferences {
         editor.apply();
     }
 
+    /** The cross-section scanner, remembered by address as it doesn't bond. */
+    public static String getRememberedScannerAddress() {
+        return getString("pref_remembered_scanner_address", null);
+    }
+
+    public static String getRememberedScannerName() {
+        return getString("pref_remembered_scanner_name", null);
+    }
+
+    public static void setRememberedScanner(String address, String name) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("pref_remembered_scanner_address", address);
+        editor.putString("pref_remembered_scanner_name", name);
+        editor.apply();
+    }
+
+    public static void forgetRememberedScanner() {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove("pref_remembered_scanner_address");
+        editor.remove("pref_remembered_scanner_name");
+        editor.apply();
+    }
+
     public static boolean isSectionScannerOn() {
         return getBoolean("pref_section_scanner", false);
     }

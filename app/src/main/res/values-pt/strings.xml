@@ -371,6 +371,30 @@
     <string name="device_fcl_command_take_shot">Fazer Leitura</string>
     <string name="device_fcl_command_laser_off">Laser Desligado</string>
     <string name="device_fcl_command_device_off">Dispositivo Desligado</string>
+    <string name="device_scanner_title">Scanner de secções</string>
+    <string name="device_scanner_none">Nenhum scanner escolhido</string>
+    <string name="device_scanner_find">Procurar</string>
+    <string name="device_scanner_forget">Esquecer</string>
+    <string name="device_scanner_connect">Ligar ao scanner</string>
+    <string name="device_scanner_status_disconnected">Não ligado</string>
+    <string name="device_scanner_status_connected">Ligado a %1$s, firmware %2$s</string>
+    <string name="device_scanner_status_last_section">Último varrimento recebido %s</string>
+    <string name="device_scanner_use_test">Usar scanner de teste</string>
+    <string name="device_scanner_test_name">Scanner de teste</string>
+    <string name="device_scanner_send_test_section">Enviar secção de teste</string>
+    <string name="device_scanner_searching">À procura de um scanner</string>
+    <string name="device_scanner_found">Scanner %s encontrado</string>
+    <string name="device_scanner_hello">Scanner %1$s, firmware %2$s, pronto</string>
+    <string name="device_scanner_protocol_mismatch">O scanner usa o protocolo %1$d e o SexyTopo o %2$d, por isso foi desligado</string>
+    <string name="device_scanner_section_taken">Varrimento %1$s recebido na estação %2$s</string>
+    <string name="device_scanner_section_conflict">O desenho do varrimento %1$s na estação %2$s foi alterado aqui entretanto, por isso pergunta-se qual manter</string>
+    <string name="device_scanner_section_refused">Varrimento %1$s não recebido (%2$s)</string>
+    <string name="device_scanner_frame_dropped">Mensagem ilegível do scanner descartada (%s)</string>
+    <string name="device_scanner_error">Erro de ligação ao scanner (%s)</string>
+    <string name="device_scanner_conflict_title">Desenho do scanner</string>
+    <string name="device_scanner_conflict_message">O desenho na estação %1$s foi alterado aqui desde o último do scanner. Manter o desenho do SexyTopo ou usar o do varrimento %2$s?</string>
+    <string name="device_scanner_conflict_keep">Manter o do SexyTopo</string>
+    <string name="device_scanner_conflict_use">Usar o do scanner</string>
 
     <!-- Calibration -->
     <string name="calibration_title_mode">Modo de calibração</string>

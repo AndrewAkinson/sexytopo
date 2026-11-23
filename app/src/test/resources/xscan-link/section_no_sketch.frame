@@ -1,0 +1,2 @@
+XS1 369 4d6ca5e0
+{"type":"section","scan":{"format":"XScan scan 1","scan":"b0004-002","station":"5","orientation":"vertical","facing":"back","board":{"start_up":4,"scan":1,"ms_since_start_up":54326},"lidar":{"model":65,"firmware":"1.02","hardware":18,"serial":"53ABFC8D"},"samples":6,"returns":4,"points":[[0.5,1500,47],[90.2,2000.25,46],[180,1250,40],[270.4,1999.75,45]]},"based_on":0}

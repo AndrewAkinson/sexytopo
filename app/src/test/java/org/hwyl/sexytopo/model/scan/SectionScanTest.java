@@ -27,7 +27,7 @@ public class SectionScanTest {
             List<SectionScan.Point> points =
                     Collections.singletonList(new SectionScan.Point((float) c[0], 1000, 50));
             Coord2D point =
-                    new SectionScan("b1", (SectionScan.Facing) c[1], points, "")
+                    new SectionScan("b1", (SectionScan.Facing) c[1], points, null, "")
                             .getPointsInSection()
                             .get(0);
             String what = c[0] + " degrees facing " + c[1];
@@ -41,7 +41,7 @@ public class SectionScanTest {
         List<SectionScan.Point> points =
                 Collections.singletonList(new SectionScan.Point(180, 2500, 50));
         Coord2D point =
-                new SectionScan("b1", SectionScan.Facing.ON, points, "")
+                new SectionScan("b1", SectionScan.Facing.ON, points, null, "")
                         .getPointsInSection()
                         .get(0);
         Assert.assertEquals(2.5f, point.y, DELTA);

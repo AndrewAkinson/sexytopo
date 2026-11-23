@@ -26,6 +26,10 @@ public class ScanJsonlTranslater {
     private static final String FACING_TAG = "facing";
     private static final String POINTS_TAG = "points";
     private static final String FACING_BACK = "back";
+    // SexyTopo's own record of what it took from the scanner, ignored by other readers
+    private static final String SEXYTOPO_TAG = "sexytopo";
+    private static final String REVISION_TAG = "revision";
+    private static final String SKETCH_HASH_TAG = "sketch_hash";
 
     /**
      * The survey's scans, matched to its stations by name. A line that matches no station, can't be
@@ -77,7 +81,12 @@ public class ScanJsonlTranslater {
         return text.toString();
     }
 
-    static SectionScan toScan(JSONObject json, String source) throws JSONException {
+    /** A scan from one line of the exchange format, which must have a station. */
+    public static SectionScan toScan(JSONObject json) throws JSONException {
+        return toScan(json, json.toString());
+    }
+
+    private static SectionScan toScan(JSONObject json, String source) throws JSONException {
         String format = json.getString(FORMAT_TAG);
         if (!format.equals(FORMAT)) {
             throw new IllegalArgumentException(format);
@@ -97,6 +106,25 @@ public class ScanJsonlTranslater {
                             (float) point.getDouble(1),
                             point.getInt(2)));
         }
-        return new SectionScan(json.getString(SCAN_TAG), facing, points, source);
+        SectionScan.Received received = null;
+        JSONObject sexyTopo = json.optJSONObject(SEXYTOPO_TAG);
+        if (sexyTopo != null) {
+            received =
+                    new SectionScan.Received(
+                            sexyTopo.getInt(REVISION_TAG), sexyTopo.optString(SKETCH_HASH_TAG));
+        }
+        json.getString(STATION_TAG);
+        return new SectionScan(json.getString(SCAN_TAG), facing, points, received, source);
+    }
+
+    /** The scan line with a record of the drawing revision SexyTopo took and its hash. */
+    public static SectionScan withReceived(JSONObject json, int revision, String sketchHash)
+            throws JSONException {
+        JSONObject copy = new JSONObject(json.toString());
+        JSONObject sexyTopo = new JSONObject();
+        sexyTopo.put(REVISION_TAG, revision);
+        sexyTopo.put(SKETCH_HASH_TAG, sketchHash);
+        copy.put(SEXYTOPO_TAG, sexyTopo);
+        return toScan(copy);
     }
 }

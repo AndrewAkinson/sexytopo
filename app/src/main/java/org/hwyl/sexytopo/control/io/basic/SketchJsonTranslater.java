@@ -376,14 +376,14 @@ public class SketchJsonTranslater {
         return crossSectionDetail;
     }
 
-    private static boolean isSketchEmpty(Sketch sketch) {
+    public static boolean isSketchEmpty(Sketch sketch) {
         return sketch.getPathDetails().isEmpty()
                 && sketch.getAreaDetails().isEmpty()
                 && sketch.getSymbolDetails().isEmpty()
                 && sketch.getTextDetails().isEmpty();
     }
 
-    private static JSONObject toSubSketchJson(Sketch sketch) throws JSONException {
+    public static JSONObject toSubSketchJson(Sketch sketch) throws JSONException {
         JSONObject json = new JSONObject();
 
         JSONArray pathDetailArray = new JSONArray();
@@ -413,7 +413,7 @@ public class SketchJsonTranslater {
         return json;
     }
 
-    private static Sketch toSubSketch(JSONObject json) {
+    public static Sketch toSubSketch(JSONObject json) {
 
         Sketch sketch = new Sketch();
 

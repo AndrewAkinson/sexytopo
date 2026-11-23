@@ -101,8 +101,8 @@ public class Loader {
     }
 
     /**
-     * The scans, if the survey has any. Read whether or not the scanner setting is on, so they
-     * keep up with station renames. A file that can't be read doesn't stop the survey loading.
+     * The scans, if the survey has any. Read whether or not the scanner setting is on, so they keep
+     * up with station renames. A file that can't be read doesn't stop the survey loading.
      */
     private static void loadScans(Context context, Survey survey, boolean restoreAutosave) {
         try {

@@ -9,8 +9,8 @@ import org.hwyl.sexytopo.model.survey.Station;
 
 /**
  * A survey's scans, one for each station that has one. Held against the Station rather than its
- * name, so a scan follows its station through a rename. Lines that match no station, or can't
- * be read, are kept as they are so nothing in the file is lost.
+ * name, so a scan follows its station through a rename. Lines that match no station, or can't be
+ * read, are kept as they are so nothing in the file is lost.
  */
 public class SurveyScans {
 
@@ -24,6 +24,20 @@ public class SurveyScans {
     /** Sets the station's scan, returning the one it replaces or null. */
     public SectionScan put(Station station, SectionScan scan) {
         return stationsToScans.put(station, scan);
+    }
+
+    /** The station a scan is held against, or null if none. */
+    public Station findStation(String scanName) {
+        for (Map.Entry<Station, SectionScan> entry : stationsToScans.entrySet()) {
+            if (entry.getValue().getScanName().equals(scanName)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    public SectionScan remove(Station station) {
+        return stationsToScans.remove(station);
     }
 
     public Map<Station, SectionScan> getStationsToScans() {

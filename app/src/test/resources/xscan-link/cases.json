@@ -1,0 +1,418 @@
+[
+ {
+  "file": "hello_sexytopo.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "hello",
+     "protocol": 1,
+     "app": "SexyTopo 1.15.0"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "hello_xscan.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "hello",
+     "protocol": 1,
+     "firmware": "0.4",
+     "board": "A1B2C3"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "survey.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "survey",
+     "name": "Trip1",
+     "stations": [
+      "1",
+      "2",
+      "3",
+      "5a"
+     ],
+     "scans": [
+      {
+       "scan": "b0004-001",
+       "station": "5a"
+      }
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "file": "station_added.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "station_added",
+     "name": "6"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "station_renamed.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "station_renamed",
+     "from": "5",
+     "to": "5a"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "station_deleted.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "station_deleted",
+     "name": "6"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "section.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "section",
+     "scan": {
+      "format": "XScan scan 1",
+      "scan": "b0004-001",
+      "station": "5",
+      "orientation": "vertical",
+      "facing": "on",
+      "board": {
+       "start_up": 4,
+       "scan": 1,
+       "ms_since_start_up": 54326
+      },
+      "lidar": {
+       "model": 65,
+       "firmware": "1.02",
+       "hardware": 18,
+       "serial": "53ABFC8D"
+      },
+      "samples": 6,
+      "returns": 4,
+      "points": [
+       [
+        0.5,
+        1500,
+        47
+       ],
+       [
+        90.2,
+        2000.25,
+        46
+       ],
+       [
+        180,
+        1250,
+        40
+       ],
+       [
+        270.4,
+        1999.75,
+        45
+       ]
+      ]
+     },
+     "sketch": {
+      "format": "XScan sketch 1",
+      "scan": "b0004-001",
+      "revision": 2,
+      "sexytopo": "26c93a7a",
+      "sketch": {
+       "paths": [
+        {
+         "colour": "BLACK",
+         "line-type": "WALL",
+         "points": [
+          {
+           "x": -2,
+           "y": 0
+          },
+          {
+           "x": 0,
+           "y": -1.5
+          },
+          {
+           "x": 2,
+           "y": 0
+          },
+          {
+           "x": 0,
+           "y": 1.25
+          },
+          {
+           "x": -2,
+           "y": 0
+          }
+         ]
+        }
+       ],
+       "areas": [],
+       "labels": [],
+       "symbols": []
+      }
+     },
+     "based_on": 1
+    }
+   ]
+  ]
+ },
+ {
+  "file": "section_no_sketch.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "section",
+     "scan": {
+      "format": "XScan scan 1",
+      "scan": "b0004-002",
+      "station": "5",
+      "orientation": "vertical",
+      "facing": "back",
+      "board": {
+       "start_up": 4,
+       "scan": 1,
+       "ms_since_start_up": 54326
+      },
+      "lidar": {
+       "model": 65,
+       "firmware": "1.02",
+       "hardware": 18,
+       "serial": "53ABFC8D"
+      },
+      "samples": 6,
+      "returns": 4,
+      "points": [
+       [
+        0.5,
+        1500,
+        47
+       ],
+       [
+        90.2,
+        2000.25,
+        46
+       ],
+       [
+        180,
+        1250,
+        40
+       ],
+       [
+        270.4,
+        1999.75,
+        45
+       ]
+      ]
+     },
+     "based_on": 0
+    }
+   ]
+  ]
+ },
+ {
+  "file": "reply_ok.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "reply",
+     "scan": "b0004-001",
+     "revision": 2,
+     "result": "ok"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "reply_error.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "reply",
+     "scan": "b0004-001",
+     "revision": 2,
+     "result": "error",
+     "reason": "no_station"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "reply_conflict.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "reply",
+     "scan": "b0004-001",
+     "revision": 2,
+     "result": "conflict"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "reply_unread.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "reply",
+     "result": "error",
+     "reason": "bad_checksum"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "unknown_type.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "later_feature",
+     "anything": [
+      1,
+      2
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "file": "accented.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "station_added",
+     "name": "Salle Cañón"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "two_frames.frame",
+  "read": [
+   [
+    "message",
+    {
+     "type": "station_added",
+     "name": "6"
+    }
+   ],
+   [
+    "message",
+    {
+     "type": "station_deleted",
+     "name": "6"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "bad_checksum.frame",
+  "read": [
+   [
+    "dropped",
+    "bad_checksum"
+   ]
+  ]
+ },
+ {
+  "file": "bad_checksum_then_good.frame",
+  "read": [
+   [
+    "dropped",
+    "bad_checksum"
+   ],
+   [
+    "message",
+    {
+     "type": "station_deleted",
+     "name": "6"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "junk_then_good.frame",
+  "read": [
+   [
+    "dropped",
+    "bad_header"
+   ],
+   [
+    "message",
+    {
+     "type": "station_added",
+     "name": "6"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "not_json.frame",
+  "read": [
+   [
+    "dropped",
+    "unknown_format"
+   ]
+  ]
+ },
+ {
+  "file": "no_type.frame",
+  "read": [
+   [
+    "dropped",
+    "unknown_format"
+   ]
+  ]
+ },
+ {
+  "file": "too_long.frame",
+  "read": [
+   [
+    "dropped",
+    "bad_header"
+   ],
+   [
+    "message",
+    {
+     "type": "station_added",
+     "name": "6"
+    }
+   ]
+  ]
+ },
+ {
+  "file": "cut_short.frame",
+  "read": []
+ }
+]

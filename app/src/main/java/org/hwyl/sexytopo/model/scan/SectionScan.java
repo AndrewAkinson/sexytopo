@@ -31,15 +31,32 @@ public class SectionScan {
         }
     }
 
+    /**
+     * The drawing revision SexyTopo last took from the scanner, and a hash of that drawing as
+     * taken, so it can tell whether the drawing has been edited here since.
+     */
+    public static class Received {
+        public final int revision;
+        public final String sketchHash;
+
+        public Received(int revision, String sketchHash) {
+            this.revision = revision;
+            this.sketchHash = sketchHash;
+        }
+    }
+
     private final String scanName;
     private final Facing facing;
     private final List<Point> points;
     private final List<Coord2D> pointsInSection;
+    private final Received received;
     private final String source;
 
-    public SectionScan(String scanName, Facing facing, List<Point> points, String source) {
+    public SectionScan(
+            String scanName, Facing facing, List<Point> points, Received received, String source) {
         this.scanName = scanName;
         this.facing = facing;
+        this.received = received;
         this.source = source;
         this.points = Collections.unmodifiableList(new ArrayList<>(points));
         this.pointsInSection = Collections.unmodifiableList(toSection(points, facing));
@@ -47,6 +64,11 @@ public class SectionScan {
 
     public String getScanName() {
         return scanName;
+    }
+
+    /** What SexyTopo last took from the scanner for this scan, or null if nothing yet. */
+    public Received getReceived() {
+        return received;
     }
 
     /** The line of the scanner file this scan was read from. */

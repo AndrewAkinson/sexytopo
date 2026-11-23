@@ -3,6 +3,7 @@ package org.hwyl.sexytopo.control.io.thirdparty.survex;
 import android.content.Context;
 import java.io.IOException;
 import org.hwyl.sexytopo.R;
+import org.hwyl.sexytopo.SexyTopoConstants;
 import org.hwyl.sexytopo.control.io.SurveyFile;
 import org.hwyl.sexytopo.control.io.thirdparty.survextherion.SurvexTherionUtil;
 import org.hwyl.sexytopo.control.io.thirdparty.survextherion.SurveyFormat;
@@ -26,7 +27,8 @@ public class SurvexExporter extends Exporter {
         if (hasNonDefaultDirections(survey)) {
             SurveyFile.SurveyFileType especType =
                     new SurveyFile.SurveyFileType(
-                            SurvexConstants.ESPEC_EXTENSION, SurvexConstants.ESPEC_MIME_TYPE);
+                            SurvexConstants.ESPEC_EXTENSION,
+                            SexyTopoConstants.MIME_TYPE_NO_EXTENSION);
             getOutputFile(especType).save(context, getEspecContent(survey));
         }
     }

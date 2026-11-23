@@ -14,6 +14,7 @@ import org.hwyl.sexytopo.control.util.StationNamer;
 import org.hwyl.sexytopo.control.util.SurveyTraversal;
 import org.hwyl.sexytopo.control.util.Wrapper;
 import org.hwyl.sexytopo.model.geometry.Projection2D;
+import org.hwyl.sexytopo.model.scan.SurveyScans;
 import org.hwyl.sexytopo.model.sketch.Sketch;
 
 public class Survey {
@@ -31,6 +32,8 @@ public class Survey {
     private Sketch elevationSketch = new Sketch();
 
     private Trip trip = null;
+
+    private SurveyScans scans = new SurveyScans();
 
     private final Map<Station, Set<SurveyConnection>> stationsToSurveyConnections = new HashMap<>();
 
@@ -73,6 +76,14 @@ public class Survey {
 
     public Uri getUri() {
         return directory == null ? null : getDirectory().getUri();
+    }
+
+    public SurveyScans getScans() {
+        return scans;
+    }
+
+    public void setScans(SurveyScans scans) {
+        this.scans = scans;
     }
 
     public void setActiveStation(Station activeStation) {

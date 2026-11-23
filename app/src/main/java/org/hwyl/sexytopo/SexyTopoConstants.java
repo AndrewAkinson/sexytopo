@@ -58,6 +58,8 @@ public class SexyTopoConstants {
 
     public static final String MIME_TYPE_DEFAULT = "text/plain";
     public static final String MIME_TYPE_JSON = "application/json";
+    // Android adds an extension for most types to a new file whose name it doesn't recognise
+    public static final String MIME_TYPE_NO_EXTENSION = "application/octet-stream";
 
     public static final int JSON_INDENT = 2;
 

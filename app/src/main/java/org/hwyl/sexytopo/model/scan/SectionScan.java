@@ -7,7 +7,8 @@ import org.hwyl.sexytopo.model.geometry.Coord2D;
 
 /**
  * A lidar scan taken at a station by a cross-section scanner, drawn behind the station's
- * cross-section. Only the lidar's returns are kept.
+ * cross-section. Only the lidar's returns are kept. The line it was read from is kept too, so
+ * writing it back loses nothing SexyTopo doesn't read.
  */
 public class SectionScan {
 
@@ -31,15 +32,15 @@ public class SectionScan {
     }
 
     private final String scanName;
-    private final String stationName;
     private final Facing facing;
     private final List<Point> points;
     private final List<Coord2D> pointsInSection;
+    private final String source;
 
-    public SectionScan(String scanName, String stationName, Facing facing, List<Point> points) {
+    public SectionScan(String scanName, Facing facing, List<Point> points, String source) {
         this.scanName = scanName;
-        this.stationName = stationName;
         this.facing = facing;
+        this.source = source;
         this.points = Collections.unmodifiableList(new ArrayList<>(points));
         this.pointsInSection = Collections.unmodifiableList(toSection(points, facing));
     }
@@ -48,8 +49,9 @@ public class SectionScan {
         return scanName;
     }
 
-    public String getStationName() {
-        return stationName;
+    /** The line of the scanner file this scan was read from. */
+    public String getSource() {
+        return source;
     }
 
     public Facing getFacing() {

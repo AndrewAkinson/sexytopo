@@ -56,6 +56,7 @@ public class Loader {
                     return text;
                 };
         populate(context, survey, surveyFiles, surveyUrisNotToLoad);
+        loadScans(context, survey, restoreAutosave);
 
         survey.setSaved(true);
         return survey;
@@ -96,6 +97,23 @@ public class Loader {
             survey.setElevationSketch(elevation);
         } else {
             throw new IllegalArgumentException("Not a survey data file: " + type.getExtension());
+        }
+    }
+
+    /**
+     * The scans, if the survey has any. Read whether or not the scanner setting is on, so they
+     * keep up with station renames. A file that can't be read doesn't stop the survey loading.
+     */
+    private static void loadScans(Context context, Survey survey, boolean restoreAutosave) {
+        try {
+            SurveyFile file =
+                    considerSwappingForAutosave(
+                            context, SurveyFile.SCANS.get(survey), restoreAutosave);
+            if (file.exists(context)) {
+                survey.setScans(ScanJsonlTranslater.toScans(survey, file.slurp(context)));
+            }
+        } catch (Exception e) {
+            Log.e(R.string.file_load_scans_error, e.getMessage());
         }
     }
 

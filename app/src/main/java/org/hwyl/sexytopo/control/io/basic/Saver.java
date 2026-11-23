@@ -13,6 +13,7 @@ public class Saver {
             SurveyFile surveyFile = type.get(survey);
             surveyFile.save(context, text);
         }
+        saveScans(context, survey, SurveyFile.SCANS.get(survey));
         survey.setSaved(true);
     }
 
@@ -22,7 +23,16 @@ public class Saver {
             SurveyFile autosaveFile = type.AUTOSAVE.get(survey);
             autosaveFile.save(context, text);
         }
+        saveScans(context, survey, SurveyFile.SCANS.AUTOSAVE.get(survey));
         survey.setAutosaved(true);
+    }
+
+    /** Written only if the survey has scans, so surveys without a scanner never get the file. */
+    private static void saveScans(Context context, Survey survey, SurveyFile file)
+            throws Exception {
+        if (!survey.getScans().isEmpty()) {
+            file.save(context, ScanJsonlTranslater.toText(survey.getScans()));
+        }
     }
 
     public static String toText(Context context, Survey survey, SurveyFile.SurveyFileType type)

@@ -32,8 +32,7 @@ public class SurveyFile extends AbstractSurveyFile {
                 AUTOSAVE =
                         new SurveyFileType(
                                 withExtension(extension, SexyTopoConstants.AUTOSAVE_EXTENSION),
-                                "application/octet-stream"); // mime type for no additional
-                // extension
+                                SexyTopoConstants.MIME_TYPE_NO_EXTENSION);
             }
         }
 
@@ -62,9 +61,10 @@ public class SurveyFile extends AbstractSurveyFile {
             new SurveyFileType(
                     SexyTopoConstants.EXT_ELEVATION_SKETCH_EXTENSION,
                     SexyTopoConstants.MIME_TYPE_JSON);
-    // written by the cross-section scanner, so not one of the files SexyTopo saves
+    // kept out of ALL_DATA_TYPES, as only surveys with scanner scans have one
     public static final SurveyFileType SCANS =
-            new SurveyFileType(SexyTopoConstants.SCANS_EXTENSION);
+            new SurveyFileType(
+                    SexyTopoConstants.SCANS_EXTENSION, SexyTopoConstants.MIME_TYPE_NO_EXTENSION);
     public static final SurveyFileType LOG =
             new SurveyFileType(SexyTopoConstants.LOG_EXTENSION, SexyTopoConstants.MIME_TYPE_JSON);
 

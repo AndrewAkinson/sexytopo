@@ -2,6 +2,7 @@ package org.hwyl.sexytopo.control.io.thirdparty.survex;
 
 import java.util.Arrays;
 import java.util.Collections;
+import org.hwyl.sexytopo.SexyTopoConstants;
 import org.hwyl.sexytopo.control.io.thirdparty.survextherion.SurvexTherionUtil;
 import org.hwyl.sexytopo.control.io.thirdparty.survextherion.SurveyFormat;
 import org.hwyl.sexytopo.control.util.SurveyUpdater;
@@ -446,7 +447,7 @@ public class SurvexExporterTest {
     @Test
     public void testEspecMimeTypeIsOctetStream() {
         // application/octet-stream prevents Android from appending a .txt suffix
-        Assert.assertEquals("application/octet-stream", SurvexConstants.ESPEC_MIME_TYPE);
+        Assert.assertEquals("application/octet-stream", SexyTopoConstants.MIME_TYPE_NO_EXTENSION);
     }
 
     @Test

@@ -1,12 +1,14 @@
 package org.hwyl.sexytopo.control.io.basic;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.hwyl.sexytopo.R;
 import org.hwyl.sexytopo.control.Log;
 import org.hwyl.sexytopo.model.scan.SectionScan;
+import org.hwyl.sexytopo.model.scan.SurveyScans;
+import org.hwyl.sexytopo.model.survey.Station;
+import org.hwyl.sexytopo.model.survey.Survey;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,9 +27,12 @@ public class ScanJsonlTranslater {
     private static final String POINTS_TAG = "points";
     private static final String FACING_BACK = "back";
 
-    /** The scans by station name. Lines that can't be read are logged and skipped. */
-    public static Map<String, SectionScan> toScans(String text) {
-        Map<String, SectionScan> scans = new HashMap<>();
+    /**
+     * The survey's scans, matched to its stations by name. A line that matches no station, can't be
+     * read, or is replaced by a later line for the same station is kept as it is.
+     */
+    public static SurveyScans toScans(Survey survey, String text) {
+        SurveyScans scans = new SurveyScans();
         String[] lines = text.split("\n");
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i].trim();
@@ -35,17 +40,44 @@ public class ScanJsonlTranslater {
                 continue;
             }
             try {
-                SectionScan scan = toScan(new JSONObject(line));
+                JSONObject json = new JSONObject(line);
+                SectionScan scan = toScan(json, line);
+                Station station = survey.getStationByName(json.getString(STATION_TAG));
+                if (station == null) {
+                    scans.addUnmatchedLine(line);
+                    continue;
+                }
                 // the last line for a station is its latest scan
-                scans.put(scan.getStationName(), scan);
+                SectionScan replaced = scans.put(station, scan);
+                if (replaced != null) {
+                    scans.addUnmatchedLine(replaced.getSource());
+                }
             } catch (JSONException | IllegalArgumentException e) {
                 Log.e(R.string.file_load_scan_line_error, i + 1, e.getMessage());
+                scans.addUnmatchedLine(line);
             }
         }
         return scans;
     }
 
-    static SectionScan toScan(JSONObject json) throws JSONException {
+    /**
+     * The scanner file text: unmatched lines as they were, then each scan with its station's
+     * current name. Unmatched lines go first so a station's own scan stays its last line.
+     */
+    public static String toText(SurveyScans scans) throws JSONException {
+        StringBuilder text = new StringBuilder();
+        for (String line : scans.getUnmatchedLines()) {
+            text.append(line).append('\n');
+        }
+        for (Map.Entry<Station, SectionScan> entry : scans.getStationsToScans().entrySet()) {
+            JSONObject json = new JSONObject(entry.getValue().getSource());
+            json.put(STATION_TAG, entry.getKey().getName());
+            text.append(json).append('\n');
+        }
+        return text.toString();
+    }
+
+    static SectionScan toScan(JSONObject json, String source) throws JSONException {
         String format = json.getString(FORMAT_TAG);
         if (!format.equals(FORMAT)) {
             throw new IllegalArgumentException(format);
@@ -65,7 +97,6 @@ public class ScanJsonlTranslater {
                             (float) point.getDouble(1),
                             point.getInt(2)));
         }
-        return new SectionScan(
-                json.getString(SCAN_TAG), json.getString(STATION_TAG), facing, points);
+        return new SectionScan(json.getString(SCAN_TAG), facing, points, source);
     }
 }

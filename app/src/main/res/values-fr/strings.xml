@@ -11,6 +11,7 @@
     <string name="update">Mettre à jour</string>
     <string name="overwrite">Écraser</string>
     <string name="move">Déplacer</string>
+    <string name="resize">Redimensionner</string>
     <string name="replace">Remplacer</string>
     <string name="rename">Renommer</string>
     <string name="clear">Effacer</string>
@@ -187,7 +188,7 @@
     <string name="sketch_toolbar_redo">Refaire</string>
     <string name="sketch_toolbar_zoom_in">Zoom grossissant</string>
     <string name="sketch_toolbar_zoom_out">Zoom dégrossissant</string>
-    <string name="sketch_toolbar_colour_main">Couleur principale</string>
+    <string name="sketch_toolbar_colour_main">Par défaut</string>
     <string name="sketch_toolbar_colour_brown">Marron</string>
     <string name="sketch_toolbar_colour_grey">Gris</string>
     <string name="sketch_toolbar_colour_red">Rouge</string>
@@ -230,6 +231,8 @@
     <string name="sketch_position_cross_section_instruction">Sélectionnez où dessiner la coupe transversale</string>
     <string name="sketch_rotate_cross_section_instruction">Faites glisser depuis la station pour définir la direction de la coupe</string>
     <string name="sketch_symbol_orientation_education">Faites glisser pour définir la direction du symbole</string>
+    <string name="sketch_move_detail_instruction">Faites glisser pour repositionner</string>
+    <string name="sketch_resize_detail_instruction">Faites glisser pour redimensionner</string>
     <string name="sketch_text_hint">Entrer le texte</string>
 
     <!-- Table view -->

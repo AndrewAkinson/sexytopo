@@ -11,6 +11,7 @@
     <string name="update">Aktualisieren</string>
     <string name="overwrite">Überschreiben</string>
     <string name="move">Verschieben</string>
+    <string name="resize">Größe ändern</string>
     <string name="replace">Ersetzen</string>
     <string name="rename">Umbenennen</string>
     <string name="clear">Löschen</string>
@@ -187,7 +188,7 @@
     <string name="sketch_toolbar_redo">Wiederholen</string>
     <string name="sketch_toolbar_zoom_in">Vergrößern</string>
     <string name="sketch_toolbar_zoom_out">Verkleinern</string>
-    <string name="sketch_toolbar_colour_main">Hauptfarbe</string>
+    <string name="sketch_toolbar_colour_main">Standard</string>
     <string name="sketch_toolbar_colour_brown">Braun</string>
     <string name="sketch_toolbar_colour_grey">Grau</string>
     <string name="sketch_toolbar_colour_red">Rot</string>
@@ -230,6 +231,8 @@
     <string name="sketch_position_cross_section_instruction">Ort zum Zeichnen eines Querschnitts auswählen</string>
     <string name="sketch_rotate_cross_section_instruction">Von der Station ziehen, um die Querschnittsrichtung festzulegen</string>
     <string name="sketch_symbol_orientation_education"> Ziehen, um die Richtung des Symbols festzulegen</string>
+    <string name="sketch_move_detail_instruction">Ziehen, um neu zu positionieren</string>
+    <string name="sketch_resize_detail_instruction">Ziehen, um die Größe zu ändern</string>
     <string name="sketch_text_hint">Text eingeben</string>
 
     <!--  Table view  -->

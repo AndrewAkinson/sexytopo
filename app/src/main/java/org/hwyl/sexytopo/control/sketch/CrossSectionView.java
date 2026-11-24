@@ -66,7 +66,7 @@ public class CrossSectionView extends SketchView {
 
     /** A horizontal section is drawn like the plan, with north at the top, so it has a compass. */
     @Override
-    protected boolean isCompassShown() {
+    public boolean hasCompass() {
         return orientation == CrossSection.Orientation.HORIZONTAL;
     }
 
@@ -132,7 +132,6 @@ public class CrossSectionView extends SketchView {
         drawSurvey(canvas);
         drawToolFeedback(canvas);
         drawLegend(canvas);
-        drawCompass(canvas);
     }
 
     private void drawScan(Canvas canvas) {

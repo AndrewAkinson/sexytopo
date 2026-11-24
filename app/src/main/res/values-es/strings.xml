@@ -11,6 +11,7 @@
     <string name="update">Actualizar</string>
     <string name="overwrite">Sobrescribir</string>
     <string name="move">Mover</string>
+    <string name="resize">Redimensionar</string>
     <string name="replace">Reemplazar</string>
     <string name="rename">Renombrar</string>
     <string name="clear">Limpiar</string>
@@ -187,7 +188,7 @@
     <string name="sketch_toolbar_redo">Rehacer</string>
     <string name="sketch_toolbar_zoom_in">Acercar</string>
     <string name="sketch_toolbar_zoom_out">Alejar</string>
-    <string name="sketch_toolbar_colour_main">Color principal</string>
+    <string name="sketch_toolbar_colour_main">Predeterminado</string>
     <string name="sketch_toolbar_colour_brown">Marrón</string>
     <string name="sketch_toolbar_colour_grey">Gris</string>
     <string name="sketch_toolbar_colour_red">Rojo</string>
@@ -230,6 +231,8 @@
     <string name="sketch_position_cross_section_instruction">Seleccionar dónde dibujar la sección transversal</string>
     <string name="sketch_rotate_cross_section_instruction">Arrastra desde la estación para fijar la dirección de la sección</string>
     <string name="sketch_symbol_orientation_education">Arrastrar para establecer la dirección del símbolo</string>
+    <string name="sketch_move_detail_instruction">Arrastrar para reposicionar</string>
+    <string name="sketch_resize_detail_instruction">Arrastrar para redimensionar</string>
     <string name="sketch_text_hint">Introducir texto</string>
 
     <!-- Table view -->

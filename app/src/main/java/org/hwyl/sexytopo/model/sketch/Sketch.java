@@ -558,11 +558,21 @@ public class Sketch extends Shape {
         return recoloured;
     }
 
-    /** Moves a symbol by the given offset, as a single undoable operation. */
-    public SymbolDetail moveSymbolDetail(SymbolDetail symbolDetail, Coord2D offset) {
-        SymbolDetail moved = symbolDetail.translate(offset);
-        deleteDetail(symbolDetail, Collections.singletonList((SketchDetail) moved));
+    /** Moves a symbol or piece of text by the given offset, as a single undoable operation. */
+    public SketchDetail moveDetail(SinglePositionDetail detail, Coord2D offset) {
+        SketchDetail moved = detail.translate(offset);
+        deleteDetail(detail, Collections.singletonList(moved));
         return moved;
+    }
+
+    /**
+     * Scales a symbol or piece of text by the given factor, keeping its place, as a single undoable
+     * operation.
+     */
+    public SketchDetail resizeDetail(SinglePositionDetail detail, float scale) {
+        SketchDetail resized = detail.scale(scale);
+        deleteDetail(detail, Collections.singletonList(resized));
+        return resized;
     }
 
     /** Changes the colour of a piece of text, as a single undoable operation. */
@@ -821,13 +831,21 @@ public class Sketch extends Shape {
 
     public SketchDetail findNearestVisibleDetailWithin(
             Coord2D point, float delta, float viewScale) {
+        return findNearestVisibleDetailWithin(point, delta, viewScale, detail -> true);
+    }
+
+    /** The nearest visible detail within delta of the point that passes the filter, or null. */
+    public SketchDetail findNearestVisibleDetailWithin(
+            Coord2D point, float delta, float viewScale, Predicate<SketchDetail> filter) {
 
         SketchDetail closest = null;
         float minDistance = Float.MAX_VALUE;
 
         for (SketchDetail detail : allSketchDetails()) {
             // a stroke still being drawn isn't part of the sketch yet
-            if (detail == activePath || !detail.couldBeVisibleAtScale(viewScale)) {
+            if (detail == activePath
+                    || !detail.couldBeVisibleAtScale(viewScale)
+                    || !filter.test(detail)) {
                 continue;
             }
             float distance = detail.getDistanceFrom(point);

@@ -83,7 +83,8 @@ public class SketchView extends View {
     private final ViewHost host = new ViewHost();
 
     private final CrossSectionLayer crossSections =
-            new CrossSectionLayer(viewport, state, surveyDataRenderer, sketchRenderer, host);
+            new CrossSectionLayer(
+                    viewport, state, surveyDataRenderer, () -> activity.isDebugMode(), host);
 
     private final SketchSelector selector = new SketchSelector(viewport, state);
 
@@ -94,8 +95,10 @@ public class SketchView extends View {
     private final TextTool textTool = new TextTool(viewport, state, host);
     private final SymbolTool symbolTool = new SymbolTool(viewport, state, host, textTool);
     private final SelectTool selectTool = new SelectTool(state, selector, host);
-    private final MoveSymbolTool moveSymbolTool =
-            new MoveSymbolTool(viewport, state, sketchRenderer, host);
+    private final MoveDetailTool moveDetailTool =
+            new MoveDetailTool(viewport, state, sketchRenderer, host);
+    private final ResizeDetailTool resizeDetailTool =
+            new ResizeDetailTool(viewport, state, sketchRenderer, host);
 
     // what each tool does with a touch; PINCH_TO_ZOOM has no entry, as the scale detector drives it
     private final Map<SketchTool, ToolHandler> sketchToolsToHandlers = createSketchToolMap();
@@ -113,7 +116,8 @@ public class SketchView extends View {
         handlers.put(SketchTool.POSITION_CROSS_SECTION, crossSections.positionTool);
         handlers.put(SketchTool.ROTATE_CROSS_SECTION, crossSections.rotateTool);
         handlers.put(SketchTool.MOVE_CROSS_SECTION, crossSections.moveTool);
-        handlers.put(SketchTool.MOVE_SYMBOL, moveSymbolTool);
+        handlers.put(SketchTool.MOVE_DETAIL, moveDetailTool);
+        handlers.put(SketchTool.RESIZE_DETAIL, resizeDetailTool);
         return handlers;
     }
 
@@ -138,7 +142,8 @@ public class SketchView extends View {
         overlays.initialise(getContext());
         hotCorners.initialise(getContext());
         crossSections.initialisePaints(getContext());
-        moveSymbolTool.initialise(getContext());
+        moveDetailTool.initialise(getContext());
+        resizeDetailTool.initialise(getContext());
 
         isTwoFingerModeActive = GeneralPreferences.isTwoFingerModeActive();
     }
@@ -177,17 +182,11 @@ public class SketchView extends View {
 
     public void setIsDarkModeActive(boolean isDarkModeActive) {
         sketchRenderer.setDarkModeActive(isDarkModeActive);
+        crossSections.setDarkModeActive(isDarkModeActive);
     }
 
     public void setCachedStats(float surveyLength, float surveyHeight) {
         overlays.setStats(surveyLength, surveyHeight);
-    }
-
-    public void setCompassAzimuth(float degrees) {
-        overlays.setCompassAzimuth(degrees);
-        if (SketchPreferences.Toggle.SHOW_COMPASS.isOn() && isCompassShown()) {
-            invalidate();
-        }
     }
 
     // ********** Tools **********
@@ -315,22 +314,18 @@ public class SketchView extends View {
         if (state.getSketchTool().isModal()
                 && state.getSketchTool() != SketchTool.MOVE_CROSS_SECTION
                 && event.getAction() == MotionEvent.ACTION_UP) {
-            if (state.getPreviousSketchTool() != state.getSketchTool()) {
-                state.revertToPreviousTool();
-            } else {
-                setSketchTool(SketchTool.MOVE);
-            }
+            state.endTemporaryTool();
             invalidate();
             return true;
         }
 
         if (isModalMoveSelection(event)) {
-            setSketchTool(SketchTool.MODAL_MOVE);
+            state.startTemporaryTool(SketchTool.MODAL_MOVE);
             // handled below
         }
 
         if (crossSections.isHandlePress(event)) {
-            setSketchTool(SketchTool.MOVE_CROSS_SECTION);
+            state.startTemporaryTool(SketchTool.MOVE_CROSS_SECTION);
         }
 
         if (crossSections.handleBodyTap(event)) {
@@ -407,7 +402,6 @@ public class SketchView extends View {
         drawSurvey(canvas);
         drawToolFeedback(canvas);
         drawLegend(canvas);
-        drawCompass(canvas);
         drawHotCorners(canvas);
         drawDebuggingInfo(canvas);
 
@@ -430,14 +424,21 @@ public class SketchView extends View {
      * a pinch or pan interrupts a tool, that tool's feedback stays.
      */
     protected void drawToolFeedback(Canvas canvas) {
-        ToolHandler handler = sketchToolsToHandlers.get(state.getUnderlyingSketchTool());
+        ToolHandler handler = getUnderlyingToolHandler();
         if (handler != null) {
             handler.drawFeedback(canvas);
         }
     }
 
+    /** The handler for the tool in use, or the one a pinch or pan interrupted. */
+    private ToolHandler getUnderlyingToolHandler() {
+        return sketchToolsToHandlers.get(state.getUnderlyingSketchTool());
+    }
+
     private void drawSurvey(Canvas canvas, Survey survey, Space<Coord2D> projection, int alpha) {
-        sketchRenderer.draw(canvas, activity.getSketch(survey), alpha);
+        ToolHandler handler = getUnderlyingToolHandler();
+        SketchDetail hidden = handler == null ? null : handler.getHiddenDetail();
+        sketchRenderer.draw(canvas, activity.getSketch(survey), alpha, hidden);
         drawSurveyData(survey, canvas, projection, alpha);
         if (survey == state.getSurvey()) {
             // Linked surveys are drawn without their cross-sections, to cut down on clutter.
@@ -500,17 +501,11 @@ public class SketchView extends View {
     }
 
     /**
-     * Whether to draw the compass, which turns to show which way the device is facing. That only
-     * means something in a view drawn with north at the top.
+     * Whether this view can have a compass, which turns to show which way the device is facing.
+     * That only means something in a view drawn with north at the top.
      */
-    protected boolean isCompassShown() {
+    public boolean hasCompass() {
         return state.getProjectionType() == Projection2D.PLAN;
-    }
-
-    protected void drawCompass(Canvas canvas) {
-        if (isCompassShown()) {
-            overlays.drawCompass(canvas, getHeight());
-        }
     }
 
     private void drawHotCorners(Canvas canvas) {
@@ -571,7 +566,7 @@ public class SketchView extends View {
             }
 
             if (state.getSketchTool() != SketchTool.PINCH_TO_ZOOM) {
-                setSketchTool(SketchTool.PINCH_TO_ZOOM);
+                state.startTemporaryTool(SketchTool.PINCH_TO_ZOOM);
             }
 
             float x = detector.getFocusX();
@@ -666,10 +661,18 @@ public class SketchView extends View {
                         sketch,
                         (SymbolDetail) matchedDetail,
                         onChanged,
-                        moveSymbolTool::start);
+                        moveDetailTool::start,
+                        resizeDetailTool::start);
             } else if (matchedDetail instanceof TextDetail) {
                 TextContextMenu.show(
-                        SketchView.this, x, y, sketch, (TextDetail) matchedDetail, onChanged);
+                        SketchView.this,
+                        x,
+                        y,
+                        sketch,
+                        (TextDetail) matchedDetail,
+                        onChanged,
+                        moveDetailTool::start,
+                        resizeDetailTool::start);
             }
             menuShownInThisTouch = true;
         }

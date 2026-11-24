@@ -11,6 +11,7 @@
     <string name="update">Aktualizuj</string>
     <string name="overwrite">Nadpisz</string>
     <string name="move">Przenieś</string>
+    <string name="resize">Zmień rozmiar</string>
     <string name="replace">Zamień</string>
     <string name="rename">Zmień nazwę</string>
     <string name="clear">Wyczyść</string>
@@ -187,7 +188,7 @@
     <string name="sketch_toolbar_redo">Ponów</string>
     <string name="sketch_toolbar_zoom_in">Powiększ</string>
     <string name="sketch_toolbar_zoom_out">Pomniejsz</string>
-    <string name="sketch_toolbar_colour_main">Kolor główny</string>
+    <string name="sketch_toolbar_colour_main">Domyślny</string>
     <string name="sketch_toolbar_colour_brown">Brązowy</string>
     <string name="sketch_toolbar_colour_grey">Szary</string>
     <string name="sketch_toolbar_colour_red">Czerwony</string>
@@ -230,6 +231,8 @@
     <string name="sketch_position_cross_section_instruction">Wybierz miejsce narysowania przekroju</string>
     <string name="sketch_rotate_cross_section_instruction">Przeciągnij od stacji, aby ustawić kierunek przekroju</string>
     <string name="sketch_symbol_orientation_education">Przeciągnij, aby ustawić kierunek symbolu</string>
+    <string name="sketch_move_detail_instruction">Przeciągnij, aby przenieść</string>
+    <string name="sketch_resize_detail_instruction">Przeciągnij, aby zmienić rozmiar</string>
     <string name="sketch_text_hint">Wprowadź tekst</string>
 
     <!-- Table view -->

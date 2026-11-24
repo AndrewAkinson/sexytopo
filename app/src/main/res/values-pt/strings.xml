@@ -566,6 +566,7 @@
     <string name="settings_auto_reconnect_window_summary">Por quanto tempo continuar tentando reconectar antes de pausar</string>
     <string name="settings_section_scanner_title">Scanner de secções</string>
     <string name="settings_section_scanner_summary">Mostrar as leituras lidar de um scanner de secções por trás das secções transversais</string>
+    <string name="settings_scanner_vertical_sections_title">Colocar as secções verticais do scanner em</string>
     <string name="settings_leg_amalgamation_algorithm_title">Método de concordância de trechos</string>
     <string name="settings_leg_amalgamation_angular_name">Deltas angulares</string>
     <string name="settings_leg_amalgamation_angular_description">Distância, azimute e inclinação comparados e calculados em média separadamente. Pode rejeitar medições íngremes repetidas</string>

@@ -566,6 +566,7 @@
     <string name="settings_auto_reconnect_window_summary">Per quanto tempo continuare a tentare la riconnessione prima di mettere in pausa</string>
     <string name="settings_section_scanner_title">Scanner di sezioni</string>
     <string name="settings_section_scanner_summary">Mostra le scansioni lidar di uno scanner di sezioni dietro le sezioni</string>
+    <string name="settings_scanner_vertical_sections_title">Mettere le sezioni verticali dello scanner su</string>
     <string name="settings_leg_amalgamation_algorithm_title">Metodo di concordanza del tratto</string>
     <string name="settings_leg_amalgamation_angular_name">Delta angolari</string>
     <string name="settings_leg_amalgamation_angular_description">Distanza, azimut e inclinazione confrontati e mediati separatamente. Può rifiutare letture ripide ripetute</string>

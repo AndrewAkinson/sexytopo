@@ -566,6 +566,7 @@
     <string name="settings_auto_reconnect_window_summary">Cuánto tiempo seguir intentando reconectar antes de pausar</string>
     <string name="settings_section_scanner_title">Escáner de secciones</string>
     <string name="settings_section_scanner_summary">Mostrar los escaneos lidar de un escáner de secciones detrás de las secciones transversales</string>
+    <string name="settings_scanner_vertical_sections_title">Colocar las secciones verticales del escáner en</string>
     <string name="settings_leg_amalgamation_algorithm_title">Método de concordancia de tramos</string>
     <string name="settings_leg_amalgamation_angular_name">Deltas angulares</string>
     <string name="settings_leg_amalgamation_angular_description">Distancia, azimut e inclinación se comparan y promedian por separado. Puede rechazar mediciones empinadas repetidas</string>

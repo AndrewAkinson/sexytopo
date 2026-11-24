@@ -59,6 +59,15 @@
         android:defaultValue="false" />
 
     <ListPreference
+        android:key="pref_scanner_vertical_sections"
+        android:title="@string/settings_scanner_vertical_sections_title"
+        android:entries="@array/settings_scanner_vertical_sections_entries"
+        android:entryValues="@array/settings_scanner_vertical_sections_values"
+        android:dependency="pref_section_scanner"
+        android:defaultValue="plan"
+        app:useSimpleSummaryProvider="true" />
+
+    <ListPreference
         android:key="pref_calibration_algorithm"
         android:title="@string/settings_calibration_algorithm_title"
         android:summary="@string/settings_calibration_algorithm_summary"

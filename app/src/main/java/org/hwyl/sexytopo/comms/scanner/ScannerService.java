@@ -133,6 +133,11 @@ public class ScannerService implements ScannerLink.Host {
     }
 
     @Override
+    public boolean isVerticalSectionOnElevation() {
+        return GeneralPreferences.isScannerVerticalSectionOnElevation();
+    }
+
+    @Override
     public long now() {
         return SystemClock.elapsedRealtime();
     }

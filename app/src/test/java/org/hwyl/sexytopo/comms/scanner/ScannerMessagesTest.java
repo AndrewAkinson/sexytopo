@@ -2,6 +2,8 @@ package org.hwyl.sexytopo.comms.scanner;
 
 import org.hwyl.sexytopo.control.io.basic.ScanJsonlTranslater;
 import org.hwyl.sexytopo.control.util.SurveyUpdater;
+import org.hwyl.sexytopo.model.geometry.Coord2D;
+import org.hwyl.sexytopo.model.sketch.CrossSection;
 import org.hwyl.sexytopo.model.survey.Survey;
 import org.hwyl.sexytopo.testutils.BasicTestSurveyCreator;
 import org.json.JSONObject;
@@ -19,6 +21,11 @@ public class ScannerMessagesTest {
     public void testSurveyGivesStationsOldestFirstAndScansWithCurrentNames() throws Exception {
         Survey survey = BasicTestSurveyCreator.createStraightNorth();
         survey.setScans(ScanJsonlTranslater.toScans(survey, SCAN_AT_2 + "\n" + SCAN_AT_4));
+        for (String name : new String[] {"2", "4"}) {
+            survey.getPlanSketch()
+                    .addCrossSection(
+                            new CrossSection(survey.getStationByName(name), 0), Coord2D.ORIGIN);
+        }
         SurveyUpdater.renameStation(survey, survey.getStationByName("2"), "2a");
         SurveyUpdater.deleteStation(survey, survey.getStationByName("4"));
 
@@ -40,6 +47,7 @@ public class ScannerMessagesTest {
             {ScannerMessages.hello("1.15.0"), "hello", "protocol", 1},
             {ScannerMessages.stationRenamed("5", "5a"), "station_renamed", "to", "5a"},
             {ScannerMessages.stationDeleted("6"), "station_deleted", "name", "6"},
+            {ScannerMessages.scanStation("b1", "6"), "scan_station", "station", "6"},
             {ScannerMessages.reply("b1", 2, "ok", null), "reply", "revision", 2},
             {
                 ScannerMessages.reply("b1", 2, "error", "no_station"),
@@ -57,5 +65,6 @@ public class ScannerMessagesTest {
         Assert.assertFalse(unread.has("scan"));
         Assert.assertFalse(unread.has("revision"));
         Assert.assertFalse(ScannerMessages.reply("b1", 2, "ok", null).has("reason"));
+        Assert.assertFalse(ScannerMessages.scanStation("b1", null).has("station"));
     }
 }

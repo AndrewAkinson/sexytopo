@@ -30,6 +30,10 @@ public class ScannerLinkTest {
             return "1.15.0";
         }
 
+        public boolean isVerticalSectionOnElevation() {
+            return false;
+        }
+
         public long now() {
             return now;
         }

@@ -43,7 +43,7 @@ public class ScannerSession {
     private static final String FACING_TAG = "facing";
     private static final String FACING_BACK = "back";
 
-    // where a new cross-section goes on the plan, from its station, as to_sexytopo.py does
+    // where a new cross-section goes, from its station, as to_sexytopo.py does
     private static final Coord2D NEW_SECTION_OFFSET = new Coord2D(3, 0);
 
     /** The reply to send, and for a conflict, the change to make if the user chooses it. */
@@ -74,9 +74,15 @@ public class ScannerSession {
     }
 
     private final Survey survey;
+    private final boolean verticalOnElevation;
 
-    public ScannerSession(Survey survey) {
+    /**
+     * New vertical sections go on the elevation if verticalOnElevation, otherwise the plan.
+     * Horizontal ones always go on the elevation.
+     */
+    public ScannerSession(Survey survey, boolean verticalOnElevation) {
         this.survey = survey;
+        this.verticalOnElevation = verticalOnElevation;
     }
 
     /** The reply to a frame from the scanner that was dropped unread. */
@@ -143,7 +149,10 @@ public class ScannerSession {
                         Sketch shown = putDrawing(station, orientation, facingBack, newDrawing);
                         Station previous = scans.findStation(scanName);
                         if (previous != null) {
-                            scans.remove(previous);
+                            SectionScan moved = scans.remove(previous);
+                            if (previous != station) {
+                                removeIfUnedited(previous, moved);
+                            }
                         }
                         scans.put(
                                 station,
@@ -184,8 +193,26 @@ public class ScannerSession {
     }
 
     /**
+     * A scan has moved to another station, so its old station's section goes too, unless it has
+     * been edited here since it came from the scanner.
+     */
+    private void removeIfUnedited(Station previous, SectionScan moved) throws JSONException {
+        CrossSectionDetail detail = findSection(previous);
+        if (detail == null) {
+            return;
+        }
+        Sketch sketch = detail.getSketch();
+        SectionScan.Received received = moved.getReceived();
+        if (SketchJsonTranslater.isSketchEmpty(sketch)
+                || (received != null && hash(sketch).equals(received.sketchHash))) {
+            parentOf(detail).deleteDetail(detail);
+        }
+    }
+
+    /**
      * Puts the scanner's drawing in the station's cross-section, making the section if there isn't
-     * one, and returns the drawing the section then has.
+     * one, and returns the drawing the section then has. A section turned horizontal moves off the
+     * plan to the elevation.
      */
     private Sketch putDrawing(
             Station station,
@@ -194,34 +221,46 @@ public class ScannerSession {
             Sketch drawing) {
         CrossSectionDetail detail = findSection(station);
         if (detail == null) {
-            Sketch plan = survey.getPlanSketch();
-            Coord2D position =
-                    Projection2D.PLAN
-                            .project(survey)
-                            .getStationMap()
-                            .get(station)
-                            .plus(NEW_SECTION_OFFSET);
             Sketch subSketch = drawing == null ? new Sketch() : drawing;
-            plan.addCrossSection(
-                    new CrossSectionDetail(
-                            newSection(station, orientation, facingBack), position, subSketch));
+            addSection(station, orientation, facingBack, subSketch);
             return subSketch;
         }
         if (drawing == null) {
             return detail.getSketch();
         }
-        if (detail.getCrossSection().getOrientation() != orientation) {
-            Sketch parent = parentOf(detail);
-            parent.replaceCrossSectionDetail(
-                    detail,
-                    new CrossSectionDetail(
-                            newSection(station, orientation, facingBack),
-                            detail.getPosition(),
-                            drawing));
-        } else {
+        if (detail.getCrossSection().getOrientation() == orientation) {
             detail.setSketch(drawing);
+        } else if (orientation == CrossSection.Orientation.HORIZONTAL
+                && parentOf(detail) == survey.getPlanSketch()) {
+            survey.getPlanSketch().deleteDetail(detail);
+            addSection(station, orientation, facingBack, drawing);
+        } else {
+            parentOf(detail)
+                    .replaceCrossSectionDetail(
+                            detail,
+                            new CrossSectionDetail(
+                                    newSection(station, orientation, facingBack),
+                                    detail.getPosition(),
+                                    drawing));
         }
         return drawing;
+    }
+
+    /** A new section beside its station, on the plan or the elevation as set. */
+    private void addSection(
+            Station station,
+            CrossSection.Orientation orientation,
+            boolean facingBack,
+            Sketch drawing) {
+        boolean onElevation =
+                orientation == CrossSection.Orientation.HORIZONTAL || verticalOnElevation;
+        Projection2D projection = onElevation ? Projection2D.EXTENDED_ELEVATION : Projection2D.PLAN;
+        Coord2D position =
+                projection.project(survey).getStationMap().get(station).plus(NEW_SECTION_OFFSET);
+        survey.getSketch(projection)
+                .addCrossSection(
+                        new CrossSectionDetail(
+                                newSection(station, orientation, facingBack), position, drawing));
     }
 
     private CrossSection newSection(

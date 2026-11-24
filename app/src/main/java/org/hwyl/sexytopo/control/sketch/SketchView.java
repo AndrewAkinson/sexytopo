@@ -281,11 +281,13 @@ public class SketchView extends View {
 
     public void undo() {
         state.getSketch().undo();
+        broadcastSurveyUpdated(); // a section may have come or gone, which the scanner follows
         invalidate();
     }
 
     public void redo() {
         state.getSketch().redo();
+        broadcastSurveyUpdated(); // a section may have come or gone, which the scanner follows
         invalidate();
     }
 

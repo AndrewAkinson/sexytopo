@@ -16,7 +16,11 @@ import org.junit.Test;
 /** Straight north survey: 1, then 2, 3 and 4 each 5 m further north. */
 public class ScannerSessionTest {
 
-    private static JSONObject drawing(int revision, float x) throws Exception {
+    // where a new section at station 2 goes, 3 m to its right
+    private static final Coord2D PLAN_AT_2 = new Coord2D(3, -5);
+    private static final Coord2D ELEV_AT_2 = new Coord2D(8, 0);
+
+    static JSONObject drawing(int revision, float x) throws Exception {
         JSONObject path =
                 new JSONObject()
                         .put("colour", "BLACK")
@@ -32,7 +36,7 @@ public class ScannerSessionTest {
                 .put("sketch", new JSONObject().put("paths", new JSONArray().put(path)));
     }
 
-    private static JSONObject scan(String name, String station) throws Exception {
+    static JSONObject scan(String name, String station) throws Exception {
         return new JSONObject()
                 .put("format", "XScan scan 1")
                 .put("scan", name)
@@ -42,8 +46,7 @@ public class ScannerSessionTest {
                 .put("points", new JSONArray().put(new JSONArray().put(0.5).put(1500).put(47)));
     }
 
-    private static JSONObject section(JSONObject scan, JSONObject drawing, int basedOn)
-            throws Exception {
+    static JSONObject section(JSONObject scan, JSONObject drawing, int basedOn) throws Exception {
         JSONObject section = new JSONObject().put("type", "section").put("scan", scan);
         if (drawing != null) {
             section.put("sketch", drawing);
@@ -52,7 +55,13 @@ public class ScannerSessionTest {
     }
 
     private static CrossSectionDetail sectionAt(Survey survey, String station) {
-        return survey.getPlanSketch().getCrossSectionDetail(survey.getStationByName(station));
+        Station found = survey.getStationByName(station);
+        CrossSectionDetail detail = survey.getPlanSketch().getCrossSectionDetail(found);
+        return detail != null ? detail : survey.getElevationSketch().getCrossSectionDetail(found);
+    }
+
+    private static boolean onPlan(Survey survey, CrossSectionDetail detail) {
+        return survey.getPlanSketch().getCrossSectionDetails().contains(detail);
     }
 
     private static float firstX(CrossSectionDetail detail) {
@@ -61,23 +70,28 @@ public class ScannerSessionTest {
 
     @Test
     public void testNewSectionMadeBesideItsStation() throws Exception {
-        // orientation, facing, expected orientation, expected angle
+        // orientation, facing, vertical on elevation, expected orientation, angle, on the plan and
+        // position
         Object[][] cases = {
-            {"vertical", "on", CrossSection.Orientation.VERTICAL, 0f},
-            {"vertical", "back", CrossSection.Orientation.VERTICAL, 180f},
-            {"horizontal", "on", CrossSection.Orientation.HORIZONTAL, 0f},
+            {"vertical", "on", false, CrossSection.Orientation.VERTICAL, 0f, true, PLAN_AT_2},
+            {"vertical", "back", false, CrossSection.Orientation.VERTICAL, 180f, true, PLAN_AT_2},
+            {"vertical", "on", true, CrossSection.Orientation.VERTICAL, 0f, false, ELEV_AT_2},
+            {"horizontal", "on", false, CrossSection.Orientation.HORIZONTAL, 0f, false, ELEV_AT_2},
+            {"horizontal", "on", true, CrossSection.Orientation.HORIZONTAL, 0f, false, ELEV_AT_2},
         };
         for (Object[] c : cases) {
             Survey survey = BasicTestSurveyCreator.createStraightNorth();
             JSONObject scan = scan("b1", "2").put("orientation", c[0]).put("facing", c[1]);
             ScannerSession.Outcome outcome =
-                    new ScannerSession(survey).onSection(section(scan, drawing(1, 2), 0));
-            String what = c[0] + " facing " + c[1];
+                    new ScannerSession(survey, (boolean) c[2])
+                            .onSection(section(scan, drawing(1, 2), 0));
+            String what = c[0] + " facing " + c[1] + ", vertical on elevation " + c[2];
             Assert.assertEquals(what, "ok", outcome.reply.getString("result"));
             CrossSectionDetail detail = sectionAt(survey, "2");
-            Assert.assertEquals(what, c[2], detail.getCrossSection().getOrientation());
-            Assert.assertEquals(what, (float) c[3], detail.getCrossSection().getAngle(), 0.001f);
-            Assert.assertEquals(what, new Coord2D(3, -5), detail.getPosition());
+            Assert.assertEquals(what, c[3], detail.getCrossSection().getOrientation());
+            Assert.assertEquals(what, (float) c[4], detail.getCrossSection().getAngle(), 0.001f);
+            Assert.assertEquals(what, c[5], onPlan(survey, detail));
+            Assert.assertEquals(what, c[6], detail.getPosition());
             Assert.assertEquals(what, 2f, firstX(detail), 0.001f);
             Assert.assertEquals(
                     what,
@@ -91,7 +105,7 @@ public class ScannerSessionTest {
     public void testScanWithoutDrawingGetsAnEmptySection() throws Exception {
         Survey survey = BasicTestSurveyCreator.createStraightNorth();
         ScannerSession.Outcome outcome =
-                new ScannerSession(survey).onSection(section(scan("b1", "2"), null, 0));
+                new ScannerSession(survey, false).onSection(section(scan("b1", "2"), null, 0));
         Assert.assertEquals("ok", outcome.reply.getString("result"));
         Assert.assertEquals(0, outcome.reply.getInt("revision"));
         Assert.assertTrue(SketchJsonTranslater.isSketchEmpty(sectionAt(survey, "2").getSketch()));
@@ -107,7 +121,7 @@ public class ScannerSessionTest {
         };
         for (Object[] c : cases) {
             Survey survey = BasicTestSurveyCreator.createStraightNorth();
-            ScannerSession session = new ScannerSession(survey);
+            ScannerSession session = new ScannerSession(survey, false);
             session.onSection(section(scan("b1", "2"), drawing(1, 2), 0));
             if ((boolean) c[0]) {
                 Sketch edited =
@@ -125,7 +139,7 @@ public class ScannerSessionTest {
     @Test
     public void testConflictTakenWhenTheUserChoosesTheScanners() throws Exception {
         Survey survey = BasicTestSurveyCreator.createStraightNorth();
-        ScannerSession session = new ScannerSession(survey);
+        ScannerSession session = new ScannerSession(survey, false);
         session.onSection(section(scan("b1", "2"), drawing(1, 2), 0));
         sectionAt(survey, "2")
                 .setSketch(SketchJsonTranslater.toSubSketch(drawing(1, 9).getJSONObject("sketch")));
@@ -163,7 +177,7 @@ public class ScannerSessionTest {
                             new CrossSectionDetail(
                                     new CrossSection(station, 0), Coord2D.ORIGIN, existing));
             ScannerSession.Outcome outcome =
-                    new ScannerSession(survey)
+                    new ScannerSession(survey, false)
                             .onSection(section(scan("b1", "2"), drawing(1, 2), 0));
             Assert.assertEquals("drawing " + c[0], c[1], outcome.reply.getString("result"));
         }
@@ -172,7 +186,7 @@ public class ScannerSessionTest {
     @Test
     public void testRepeatChangesNothing() throws Exception {
         Survey survey = BasicTestSurveyCreator.createStraightNorth();
-        ScannerSession session = new ScannerSession(survey);
+        ScannerSession session = new ScannerSession(survey, false);
         session.onSection(section(scan("b1", "2"), drawing(1, 2), 0));
         survey.setSaved(true);
         ScannerSession.Outcome outcome =
@@ -183,13 +197,44 @@ public class ScannerSessionTest {
 
     @Test
     public void testScanMovesToItsNewStation() throws Exception {
+        // old section edited here before the move, whether the old section is kept
+        Object[][] cases = {
+            {false, false},
+            {true, true},
+        };
+        for (Object[] c : cases) {
+            Survey survey = BasicTestSurveyCreator.createStraightNorth();
+            ScannerSession session = new ScannerSession(survey, false);
+            session.onSection(section(scan("b1", "2"), drawing(1, 2), 0));
+            if ((boolean) c[0]) {
+                sectionAt(survey, "2")
+                        .setSketch(
+                                SketchJsonTranslater.toSubSketch(
+                                        drawing(1, 9).getJSONObject("sketch")));
+            }
+            session.onSection(section(scan("b1", "3"), drawing(2, 2), 1));
+            String what = "edited " + c[0];
+            Assert.assertNull(what, survey.getScans().get(survey.getStationByName("2")));
+            Assert.assertEquals(
+                    what, "b1", survey.getScans().get(survey.getStationByName("3")).getScanName());
+            Assert.assertEquals(what, c[1], sectionAt(survey, "2") != null);
+            Assert.assertNotNull(what, sectionAt(survey, "3"));
+        }
+    }
+
+    @Test
+    public void testSectionTurnedHorizontalMovesToTheElevation() throws Exception {
         Survey survey = BasicTestSurveyCreator.createStraightNorth();
-        ScannerSession session = new ScannerSession(survey);
+        ScannerSession session = new ScannerSession(survey, false);
         session.onSection(section(scan("b1", "2"), drawing(1, 2), 0));
-        session.onSection(section(scan("b1", "3"), drawing(2, 2), 1));
-        Assert.assertNull(survey.getScans().get(survey.getStationByName("2")));
+        session.onSection(
+                section(scan("b1", "2").put("orientation", "horizontal"), drawing(2, 5), 1));
+        CrossSectionDetail detail = sectionAt(survey, "2");
         Assert.assertEquals(
-                "b1", survey.getScans().get(survey.getStationByName("3")).getScanName());
+                CrossSection.Orientation.HORIZONTAL, detail.getCrossSection().getOrientation());
+        Assert.assertFalse(onPlan(survey, detail));
+        Assert.assertTrue(survey.getPlanSketch().getCrossSectionDetails().isEmpty());
+        Assert.assertEquals(5f, firstX(detail), 0.001f);
     }
 
     @Test
@@ -219,7 +264,7 @@ public class ScannerSessionTest {
         };
         for (Object[] c : cases) {
             Survey survey = BasicTestSurveyCreator.createStraightNorth();
-            JSONObject reply = new ScannerSession(survey).onSection((JSONObject) c[1]).reply;
+            JSONObject reply = new ScannerSession(survey, false).onSection((JSONObject) c[1]).reply;
             String what = (String) c[0];
             Assert.assertEquals(what, "error", reply.getString("result"));
             Assert.assertEquals(what, c[2], reply.getString("reason"));

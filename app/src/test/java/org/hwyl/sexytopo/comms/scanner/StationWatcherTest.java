@@ -21,6 +21,13 @@ public class StationWatcherTest {
             if (type.equals("station_renamed")) {
                 described.add(
                         type + " " + message.optString("from") + " " + message.optString("to"));
+            } else if (type.equals("scan_station")) {
+                described.add(
+                        type
+                                + " "
+                                + message.optString("scan")
+                                + " "
+                                + message.optString("station", "none"));
             } else if (type.equals("survey")) {
                 described.add(type);
             } else {
@@ -81,6 +88,72 @@ public class StationWatcherTest {
             List<String> expected = new ArrayList<>(Arrays.asList((String[]) c[2]));
             Assert.assertEquals((String) c[0], expected, describe(watcher.changes(survey)));
             Assert.assertTrue((String) c[0], watcher.changes(survey).isEmpty());
+        }
+    }
+
+    @Test
+    public void testScanStationChangesFound() throws Exception {
+        // what is done after scan b1 arrives for station 2, the messages expected
+        Object[][] cases = {
+            {"nothing", (Change) s -> {}, new String[] {}},
+            {
+                "section undone",
+                (Change) s -> s.getPlanSketch().undo(),
+                new String[] {"scan_station b1 none"}
+            },
+            {
+                "section undone and redone",
+                (Change)
+                        s -> {
+                            s.getPlanSketch().undo();
+                            s.getPlanSketch().redo();
+                        },
+                new String[] {}
+            },
+            {
+                "station renamed",
+                (Change) s -> SurveyUpdater.renameStation(s, s.getStationByName("2"), "2a"),
+                new String[] {"station_renamed 2 2a"}
+            },
+            {
+                "station deleted",
+                (Change) s -> SurveyUpdater.deleteStation(s, s.getStationByName("4")),
+                new String[] {"station_deleted 4"}
+            },
+            {"scan moved", (Change) s -> receive(s, "3", 2, 1), new String[] {"scan_station b1 3"}},
+        };
+        for (Object[] c : cases) {
+            Survey survey = BasicTestSurveyCreator.createStraightNorth();
+            receive(survey, "2", 1, 0);
+            StationWatcher watcher = new StationWatcher();
+            watcher.start(survey);
+            ((Change) c[1]).apply(survey);
+            List<String> expected = new ArrayList<>(Arrays.asList((String[]) c[2]));
+            Assert.assertEquals((String) c[0], expected, describe(watcher.changes(survey)));
+            Assert.assertTrue((String) c[0], watcher.changes(survey).isEmpty());
+        }
+    }
+
+    @Test
+    public void testUndoneSectionLeftOutOfTheSurvey() throws Exception {
+        Survey survey = BasicTestSurveyCreator.createStraightNorth();
+        receive(survey, "2", 1, 0);
+        Assert.assertEquals(1, ScannerMessages.survey(survey).getJSONArray("scans").length());
+        survey.getPlanSketch().undo();
+        Assert.assertEquals(0, ScannerMessages.survey(survey).getJSONArray("scans").length());
+    }
+
+    /** Scan b1 arriving from the scanner for a station. */
+    private static void receive(Survey survey, String station, int revision, int basedOn) {
+        try {
+            new ScannerSession(survey, false)
+                    .onSection(
+                            ScannerSessionTest.section(
+                                    ScannerSessionTest.scan("b1", station),
+                                    ScannerSessionTest.drawing(revision, 2),
+                                    basedOn));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

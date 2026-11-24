@@ -566,6 +566,7 @@
     <string name="settings_auto_reconnect_window_summary">Wie lange versucht wird, die Verbindung wiederherzustellen, bevor pausiert wird</string>
     <string name="settings_section_scanner_title">Querschnitt-Scanner</string>
     <string name="settings_section_scanner_summary">Lidar-Scans eines Querschnitt-Scanners hinter Querschnitten anzeigen</string>
+    <string name="settings_scanner_vertical_sections_title">Vertikale Querschnitte des Scanners platzieren in</string>
     <string name="settings_leg_amalgamation_algorithm_title">Methode zur Streckenübereinstimmung</string>
     <string name="settings_leg_amalgamation_angular_name">Winkeldifferenzen</string>
     <string name="settings_leg_amalgamation_angular_description">Distanz, Azimut und Neigung werden getrennt verglichen und gemittelt. Kann wiederholte steile Messungen ablehnen</string>

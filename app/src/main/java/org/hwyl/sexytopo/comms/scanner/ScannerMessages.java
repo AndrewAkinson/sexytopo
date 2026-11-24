@@ -1,5 +1,6 @@
 package org.hwyl.sexytopo.comms.scanner;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.hwyl.sexytopo.model.scan.SectionScan;
 import org.hwyl.sexytopo.model.survey.Station;
@@ -19,6 +20,7 @@ public class ScannerMessages {
     public static final String STATION_ADDED = "station_added";
     public static final String STATION_RENAMED = "station_renamed";
     public static final String STATION_DELETED = "station_deleted";
+    public static final String SCAN_STATION = "scan_station";
     public static final String SECTION = "section";
     public static final String REPLY = "reply";
 
@@ -48,19 +50,35 @@ public class ScannerMessages {
             stations.put(station.getName());
         }
         JSONArray scans = new JSONArray();
-        for (Map.Entry<Station, SectionScan> entry :
-                survey.getScans().getStationsToScans().entrySet()) {
-            if (survey.getStationByName(entry.getKey().getName()) == entry.getKey()) {
-                scans.put(
-                        new JSONObject()
-                                .put(SCAN_TAG, entry.getValue().getScanName())
-                                .put(STATION_TAG, entry.getKey().getName()));
-            }
+        for (Map.Entry<String, Station> entry : scanStations(survey).entrySet()) {
+            scans.put(
+                    new JSONObject()
+                            .put(SCAN_TAG, entry.getKey())
+                            .put(STATION_TAG, entry.getValue().getName()));
         }
         return message(SURVEY)
                 .put(NAME_TAG, survey.getName())
                 .put(STATIONS_TAG, stations)
                 .put(SCANS_TAG, scans);
+    }
+
+    /**
+     * Each scan by name with the station it is on. A scan counts as on its station only while the
+     * station is in the survey and has a cross-section, so undoing the section takes it off.
+     */
+    static Map<String, Station> scanStations(Survey survey) {
+        Map<String, Station> scanStations = new LinkedHashMap<>();
+        for (Map.Entry<Station, SectionScan> entry :
+                survey.getScans().getStationsToScans().entrySet()) {
+            Station station = entry.getKey();
+            if (survey.getStationByName(station.getName()) == station
+                    && (survey.getPlanSketch().getCrossSectionDetail(station) != null
+                            || survey.getElevationSketch().getCrossSectionDetail(station)
+                                    != null)) {
+                scanStations.put(entry.getValue().getScanName(), station);
+            }
+        }
+        return scanStations;
     }
 
     public static JSONObject stationAdded(Station station) throws JSONException {
@@ -73,6 +91,12 @@ public class ScannerMessages {
 
     public static JSONObject stationDeleted(String name) throws JSONException {
         return message(STATION_DELETED).put(NAME_TAG, name);
+    }
+
+    /** The station a scan is now on here, or none if station is null. */
+    public static JSONObject scanStation(String scan, String station) throws JSONException {
+        JSONObject message = message(SCAN_STATION).put(SCAN_TAG, scan);
+        return station == null ? message : message.put(STATION_TAG, station);
     }
 
     /** A reply to a section. scan is null when the section couldn't be read. */

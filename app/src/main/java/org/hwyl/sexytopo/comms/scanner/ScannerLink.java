@@ -26,6 +26,9 @@ public class ScannerLink {
 
         String getAppVersion();
 
+        /** Whether new vertical sections go on the elevation rather than the plan. */
+        boolean isVerticalSectionOnElevation();
+
         /** Milliseconds from any fixed point, for timing out part frames. */
         long now();
 
@@ -150,7 +153,8 @@ public class ScannerLink {
         }
         try {
             ScannerSession.Outcome outcome =
-                    new ScannerSession(host.getSurvey()).onSection(message);
+                    new ScannerSession(host.getSurvey(), host.isVerticalSectionOnElevation())
+                            .onSection(message);
             JSONObject reply = outcome.reply;
             send(() -> reply);
             String scan = reply.optString(ScannerMessages.SCAN_TAG);

@@ -18,6 +18,7 @@
 - Lighter blue colour (including display of water) in dark mode for better visibility
 - New Auto-Brown Mud quick-menu mode draws sand and clay areas and symbols in brown
 - Tidy up sketch quick-menu (now with submenus)
+- Experimental link with a lidar cross-section scanner, whose scans arrive as cross-sections; horizontal ones go on the elevation, and a setting chooses whether vertical ones go on the plan or the elevation
 
 
 

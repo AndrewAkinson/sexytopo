@@ -566,6 +566,7 @@
     <string name="settings_auto_reconnect_window_summary">Combien de temps continuer à essayer de se reconnecter avant de mettre en pause</string>
     <string name="settings_section_scanner_title">Scanner de coupes</string>
     <string name="settings_section_scanner_summary">Afficher les scans lidar d\'un scanner de coupes derrière les coupes</string>
+    <string name="settings_scanner_vertical_sections_title">Placer les coupes verticales du scanner sur</string>
     <string name="settings_leg_amalgamation_algorithm_title">Méthode d\'accord des segments</string>
     <string name="settings_leg_amalgamation_angular_name">Deltas angulaires</string>
     <string name="settings_leg_amalgamation_angular_description">Distance, azimut et inclinaison comparés et moyennés séparément. Peut rejeter des mesures raides répétées</string>

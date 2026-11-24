@@ -21,6 +21,16 @@
         <item>@string/settings_leg_amalgamation_cartesian_name</item>
         <item>@string/settings_leg_amalgamation_pairwise_name</item>
     </string-array>
+    <string-array name="settings_scanner_vertical_sections_entries">
+        <item>@string/title_activity_plan</item>
+        <item>@string/title_activity_elevation</item>
+    </string-array>
+
+    <string-array name="settings_scanner_vertical_sections_values">
+        <item>plan</item>
+        <item>elevation</item>
+    </string-array>
+
     <string-array name="settings_leg_amalgamation_algorithm_values">
         <item>angular</item>
         <item>slope_corrected</item>

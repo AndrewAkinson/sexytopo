@@ -318,6 +318,11 @@ public class GeneralPreferences {
         return getBoolean("pref_section_scanner", false);
     }
 
+    /** Where the scanner's new vertical sections go. Horizontal ones always go on the elevation. */
+    public static boolean isScannerVerticalSectionOnElevation() {
+        return "elevation".equals(getString("pref_scanner_vertical_sections", "plan"));
+    }
+
     // ********** Calibration ***********
 
     public static String getCalibrationAlgorithm() {

@@ -643,6 +643,7 @@
     <string name="settings_auto_reconnect_window_summary">How long to keep trying to reconnect before pausing</string>
     <string name="settings_section_scanner_title">Cross-section scanner</string>
     <string name="settings_section_scanner_summary">Show lidar scans from a cross-section scanner behind cross-sections</string>
+    <string name="settings_scanner_vertical_sections_title">Put the scanner\'s vertical sections on</string>
     <string name="settings_max_endpoint_delta_title">Max endpoint distance (m)</string>
     <string name="settings_max_endpoint_delta_summary">How far apart the reading endpoints may be when deciding whether to create a new station. The default of 0.1 keeps all readings within one BCRA Grade 5 cell.</string>
     <string name="settings_max_pairwise_error_title">Max pairwise error</string>

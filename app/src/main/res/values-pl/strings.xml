@@ -566,6 +566,7 @@
     <string name="settings_auto_reconnect_window_summary">Jak długo próbować połączyć się ponownie przed wstrzymaniem</string>
     <string name="settings_section_scanner_title">Skaner przekrojów</string>
     <string name="settings_section_scanner_summary">Pokazuj skany lidarowe ze skanera przekrojów pod przekrojami</string>
+    <string name="settings_scanner_vertical_sections_title">Umieszczaj pionowe przekroje ze skanera na</string>
     <string name="settings_leg_amalgamation_algorithm_title">Metoda zgodności ciągu</string>
     <string name="settings_leg_amalgamation_angular_name">Delty kątowe</string>
     <string name="settings_leg_amalgamation_angular_description">Odległość, azymut i nachylenie porównywane i uśredniane osobno. Może odrzucać powtórzone strome pomiary</string>

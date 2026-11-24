@@ -445,6 +445,9 @@
     <string name="device_scanner_section_taken">Scan %1$s taken at station %2$s</string>
     <string name="device_scanner_section_conflict">Scan %1$s at station %2$s has a drawing changed here since, so asking which to keep</string>
     <string name="device_scanner_section_refused">Scan %1$s not taken (%2$s)</string>
+    <string name="device_scanner_drawing_taken">The scanner took the drawing for scan %s</string>
+    <string name="device_scanner_drawing_clash">The scanner has its own drawing for scan %s, which it will send so you can choose</string>
+    <string name="device_scanner_drawing_refused">The scanner did not take the drawing for scan %1$s (%2$s)</string>
     <string name="device_scanner_frame_dropped">Unreadable message from the scanner dropped (%s)</string>
     <string name="device_scanner_error">Scanner link error (%s)</string>
     <string name="device_scanner_conflict_title">Scanner drawing</string>

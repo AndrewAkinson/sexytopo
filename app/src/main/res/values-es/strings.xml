@@ -389,6 +389,9 @@
     <string name="device_scanner_section_taken">Escaneo %1$s recibido en la estación %2$s</string>
     <string name="device_scanner_section_conflict">El dibujo del escaneo %1$s en la estación %2$s se ha cambiado aquí desde entonces, así que se pregunta cuál conservar</string>
     <string name="device_scanner_section_refused">Escaneo %1$s no recibido (%2$s)</string>
+    <string name="device_scanner_drawing_taken">El escáner aceptó el dibujo del escaneo %s</string>
+    <string name="device_scanner_drawing_clash">El escáner tiene su propio dibujo para el escaneo %s, que enviará para que elijas</string>
+    <string name="device_scanner_drawing_refused">El escáner no aceptó el dibujo del escaneo %1$s (%2$s)</string>
     <string name="device_scanner_frame_dropped">Mensaje ilegible del escáner descartado (%s)</string>
     <string name="device_scanner_error">Error de conexión con el escáner (%s)</string>
     <string name="device_scanner_conflict_title">Dibujo del escáner</string>

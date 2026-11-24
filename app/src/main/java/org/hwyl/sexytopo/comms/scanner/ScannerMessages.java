@@ -2,7 +2,9 @@ package org.hwyl.sexytopo.comms.scanner;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.hwyl.sexytopo.control.io.basic.SketchJsonTranslater;
 import org.hwyl.sexytopo.model.scan.SectionScan;
+import org.hwyl.sexytopo.model.sketch.Sketch;
 import org.hwyl.sexytopo.model.survey.Station;
 import org.hwyl.sexytopo.model.survey.Survey;
 import org.json.JSONArray;
@@ -12,7 +14,7 @@ import org.json.JSONObject;
 /** The messages SexyTopo sends the cross-section scanner, and the names in those it receives. */
 public class ScannerMessages {
 
-    public static final int PROTOCOL = 1;
+    public static final int PROTOCOL = 2;
 
     public static final String TYPE = "type";
     public static final String HELLO = "hello";
@@ -23,6 +25,10 @@ public class ScannerMessages {
     public static final String SCAN_STATION = "scan_station";
     public static final String SECTION = "section";
     public static final String REPLY = "reply";
+    public static final String DRAWING = "drawing";
+    public static final String DRAWING_REPLY = "drawing_reply";
+    public static final String SKETCH_FORMAT = "XScan sketch 1";
+    public static final String FORMAT_TAG = "format";
 
     public static final String PROTOCOL_TAG = "protocol";
     public static final String APP_TAG = "app";
@@ -97,6 +103,22 @@ public class ScannerMessages {
     public static JSONObject scanStation(String scan, String station) throws JSONException {
         JSONObject message = message(SCAN_STATION).put(SCAN_TAG, scan);
         return station == null ? message : message.put(STATION_TAG, station);
+    }
+
+    /** A drawing edited here, for the scanner to take if it hasn't changed since basedOn. */
+    public static JSONObject drawing(String scan, int revision, int basedOn, Sketch drawing)
+            throws JSONException {
+        JSONObject sketch =
+                new JSONObject()
+                        .put(FORMAT_TAG, SKETCH_FORMAT)
+                        .put(SCAN_TAG, scan)
+                        .put(REVISION_TAG, revision)
+                        .put(SKETCH_TAG, SketchJsonTranslater.toSubSketchJson(drawing));
+        return message(DRAWING)
+                .put(SCAN_TAG, scan)
+                .put(REVISION_TAG, revision)
+                .put(BASED_ON_TAG, basedOn)
+                .put(SKETCH_TAG, sketch);
     }
 
     /** A reply to a section. scan is null when the section couldn't be read. */

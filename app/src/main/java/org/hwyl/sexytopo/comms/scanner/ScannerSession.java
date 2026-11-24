@@ -4,6 +4,9 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.hwyl.sexytopo.control.io.basic.ScanJsonlTranslater;
 import org.hwyl.sexytopo.control.io.basic.SketchJsonTranslater;
 import org.hwyl.sexytopo.control.util.CrossSectioner;
@@ -22,7 +25,10 @@ import org.json.JSONObject;
 /**
  * Decides what to do with each section the cross-section scanner sends, and makes the change to the
  * survey: its scan goes on the station, and its drawing into the station's cross-section unless
- * that has been edited in SexyTopo since the revision the scanner's drawing was based on.
+ * that has been edited in SexyTopo since the revision the scanner's drawing was based on. Also
+ * finds the drawings edited here that the scanner doesn't have yet.
+ *
+ * <p>Drawing revisions made here are even and the scanner's odd, so the two never share a number.
  */
 public class ScannerSession {
 
@@ -36,8 +42,6 @@ public class ScannerSession {
     public static final String BAD_POINTS = "bad_points";
     public static final String BAD_SKETCH = "bad_sketch";
 
-    private static final String SKETCH_FORMAT = "XScan sketch 1";
-    private static final String FORMAT_TAG = "format";
     private static final String ORIENTATION_TAG = "orientation";
     private static final String HORIZONTAL = "horizontal";
     private static final String FACING_TAG = "facing";
@@ -46,14 +50,23 @@ public class ScannerSession {
     // where a new cross-section goes, from its station, as to_sexytopo.py does
     private static final Coord2D NEW_SECTION_OFFSET = new Coord2D(3, 0);
 
-    /** The reply to send, and for a conflict, the change to make if the user chooses it. */
+    /**
+     * The reply to send, and for a conflict, the change to make if the user chooses the scanner's
+     * drawing, or what to note if they keep SexyTopo's.
+     */
     public static class Outcome {
         public final JSONObject reply;
         private final Change change;
+        private final Change keep;
 
         private Outcome(JSONObject reply, Change change) {
+            this(reply, change, null);
+        }
+
+        private Outcome(JSONObject reply, Change change, Change keep) {
             this.reply = reply;
             this.change = change;
+            this.keep = keep;
         }
 
         public boolean isConflict() {
@@ -64,6 +77,33 @@ public class ScannerSession {
         public JSONObject takeScannersDrawing() throws JSONException {
             change.apply();
             return change.okReply();
+        }
+
+        /**
+         * Keeps SexyTopo's drawing, noting the scanner's clashing revision as the one agreed, so
+         * SexyTopo's drawing is then sent to the scanner based on it.
+         */
+        public void keepSexyToposDrawing() throws JSONException {
+            if (keep != null) {
+                keep.apply();
+            }
+        }
+    }
+
+    /** A drawing edited here that the scanner hasn't got, with the revision to send it as. */
+    public static class Outgoing {
+        public final String scanName;
+        public final int revision;
+        public final int basedOn;
+        public final String hash;
+        public final Sketch drawing;
+
+        private Outgoing(String scanName, int revision, int basedOn, String hash, Sketch drawing) {
+            this.scanName = scanName;
+            this.revision = revision;
+            this.basedOn = basedOn;
+            this.hash = hash;
+            this.drawing = drawing;
         }
     }
 
@@ -101,7 +141,8 @@ public class ScannerSession {
         String scanName = scanJson == null ? null : scanJson.optString(ScannerMessages.SCAN_TAG);
         if (scanName == null
                 || scanName.isEmpty()
-                || !ScanJsonlTranslater.FORMAT.equals(scanJson.optString(FORMAT_TAG))) {
+                || !ScanJsonlTranslater.FORMAT.equals(
+                        scanJson.optString(ScannerMessages.FORMAT_TAG))) {
             return error(scanName, revision, UNKNOWN_FORMAT);
         }
 
@@ -119,7 +160,9 @@ public class ScannerSession {
         Sketch drawing = null;
         if (sketchDoc != null) {
             JSONObject sketchJson = sketchDoc.optJSONObject(ScannerMessages.SKETCH_TAG);
-            if (!SKETCH_FORMAT.equals(sketchDoc.optString(FORMAT_TAG)) || sketchJson == null) {
+            if (!ScannerMessages.SKETCH_FORMAT.equals(
+                            sketchDoc.optString(ScannerMessages.FORMAT_TAG))
+                    || sketchJson == null) {
                 return error(scanName, revision, BAD_SKETCH);
             }
             drawing = SketchJsonTranslater.toSubSketch(sketchJson);
@@ -166,10 +209,65 @@ public class ScannerSession {
                 };
 
         if (detail != null && drawing != null && isEditedSince(detail, held, basedOn)) {
-            return new Outcome(ScannerMessages.reply(scanName, revision, CONFLICT, null), change);
+            Change keep = null;
+            if (held != null && held.getScanName().equals(scanName)) {
+                keep =
+                        new Change() {
+                            public void apply() throws JSONException {
+                                agreed(scanName, revision, hash(newDrawing));
+                            }
+
+                            public JSONObject okReply() {
+                                return null;
+                            }
+                        };
+            }
+            return new Outcome(
+                    ScannerMessages.reply(scanName, revision, CONFLICT, null), change, keep);
         }
         change.apply();
         return new Outcome(ok, null);
+    }
+
+    /**
+     * The drawings of scans on their stations that differ from the revision agreed with the
+     * scanner, each numbered as the next even revision.
+     */
+    public List<Outgoing> changedDrawings() throws JSONException {
+        List<Outgoing> changed = new ArrayList<>();
+        for (Map.Entry<String, Station> entry : ScannerMessages.scanStations(survey).entrySet()) {
+            Sketch drawing = findSection(entry.getValue()).getSketch();
+            SectionScan.Received received = survey.getScans().get(entry.getValue()).getReceived();
+            String drawingHash = hash(drawing);
+            boolean differs =
+                    received == null
+                            ? !SketchJsonTranslater.isSketchEmpty(drawing)
+                            : !drawingHash.equals(received.sketchHash);
+            if (differs) {
+                int agreed = received == null ? 0 : received.revision;
+                changed.add(
+                        new Outgoing(
+                                entry.getKey(), nextEven(agreed), agreed, drawingHash, drawing));
+            }
+        }
+        return changed;
+    }
+
+    /** The smallest even revision above this one. */
+    static int nextEven(int revision) {
+        return (revision + 2) & ~1;
+    }
+
+    /** Notes a drawing revision as agreed with the scanner, with a hash of the drawing then. */
+    public void agreed(String scanName, int revision, String drawingHash) throws JSONException {
+        SurveyScans scans = survey.getScans();
+        Station station = scans.findStation(scanName);
+        if (station == null) {
+            return;
+        }
+        JSONObject line = new JSONObject(scans.get(station).getSource());
+        scans.put(station, ScanJsonlTranslater.withReceived(line, revision, drawingHash));
+        survey.setSaved(false);
     }
 
     private Outcome error(String scanName, int revision, String reason) throws JSONException {

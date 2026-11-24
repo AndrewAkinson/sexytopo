@@ -389,6 +389,9 @@
     <string name="device_scanner_section_taken">Scan %1$s reçu à la station %2$s</string>
     <string name="device_scanner_section_conflict">Le dessin du scan %1$s à la station %2$s a été modifié ici entre-temps, on demande donc lequel garder</string>
     <string name="device_scanner_section_refused">Scan %1$s non reçu (%2$s)</string>
+    <string name="device_scanner_drawing_taken">Le scanner a pris le dessin du scan %s</string>
+    <string name="device_scanner_drawing_clash">Le scanner a son propre dessin pour le scan %s, qu\'il va envoyer pour que vous choisissiez</string>
+    <string name="device_scanner_drawing_refused">Le scanner n\'a pas pris le dessin du scan %1$s (%2$s)</string>
     <string name="device_scanner_frame_dropped">Message illisible du scanner ignoré (%s)</string>
     <string name="device_scanner_error">Erreur de liaison avec le scanner (%s)</string>
     <string name="device_scanner_conflict_title">Dessin du scanner</string>

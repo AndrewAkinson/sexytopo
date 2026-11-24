@@ -389,6 +389,9 @@
     <string name="device_scanner_section_taken">Varrimento %1$s recebido na estação %2$s</string>
     <string name="device_scanner_section_conflict">O desenho do varrimento %1$s na estação %2$s foi alterado aqui entretanto, por isso pergunta-se qual manter</string>
     <string name="device_scanner_section_refused">Varrimento %1$s não recebido (%2$s)</string>
+    <string name="device_scanner_drawing_taken">O scanner aceitou o desenho da leitura %s</string>
+    <string name="device_scanner_drawing_clash">O scanner tem o seu próprio desenho para a leitura %s, que vai enviar para poder escolher</string>
+    <string name="device_scanner_drawing_refused">O scanner não aceitou o desenho da leitura %1$s (%2$s)</string>
     <string name="device_scanner_frame_dropped">Mensagem ilegível do scanner descartada (%s)</string>
     <string name="device_scanner_error">Erro de ligação ao scanner (%s)</string>
     <string name="device_scanner_conflict_title">Desenho do scanner</string>

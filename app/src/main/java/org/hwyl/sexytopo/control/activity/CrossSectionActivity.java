@@ -160,6 +160,7 @@ public class CrossSectionActivity extends SketchActivity {
         // stale copy. The editor owns its own undo, so committing is not undoable in the parent.
         originalDetail.setSketch(persistedSubSketch);
         parentSketch.setSaved(false);
+        getSurveyManager().broadcastSurveyUpdated(); // so the scanner gets the drawing
         finish();
     }
 

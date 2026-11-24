@@ -275,6 +275,15 @@ public class ScannerSessionTest {
     }
 
     @Test
+    public void testRevisionsMadeHereAreEven() {
+        // agreed revision, next revision made here
+        int[][] cases = {{0, 2}, {1, 2}, {2, 4}, {3, 4}};
+        for (int[] c : cases) {
+            Assert.assertEquals("after " + c[0], c[1], ScannerSession.nextEven(c[0]));
+        }
+    }
+
+    @Test
     public void testDroppedFramesGetAnErrorReply() throws Exception {
         // reason the frame was dropped, reason replied
         String[][] cases = {

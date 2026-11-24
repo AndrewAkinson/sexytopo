@@ -44,7 +44,7 @@ public class ScannerMessagesTest {
         // message, expected type, a field and its value
         Object[][] cases = {
             {ScannerMessages.hello("1.15.0"), "hello", "app", "SexyTopo 1.15.0"},
-            {ScannerMessages.hello("1.15.0"), "hello", "protocol", 1},
+            {ScannerMessages.hello("1.15.0"), "hello", "protocol", 2},
             {ScannerMessages.stationRenamed("5", "5a"), "station_renamed", "to", "5a"},
             {ScannerMessages.stationDeleted("6"), "station_deleted", "name", "6"},
             {ScannerMessages.scanStation("b1", "6"), "scan_station", "station", "6"},

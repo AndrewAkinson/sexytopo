@@ -389,6 +389,9 @@
     <string name="device_scanner_section_taken">Skan %1$s przyjęty na stanowisku %2$s</string>
     <string name="device_scanner_section_conflict">Rysunek skanu %1$s na stanowisku %2$s został tu w międzyczasie zmieniony, więc pytamy, który zachować</string>
     <string name="device_scanner_section_refused">Skan %1$s nie przyjęty (%2$s)</string>
+    <string name="device_scanner_drawing_taken">Skaner przyjął rysunek skanu %s</string>
+    <string name="device_scanner_drawing_clash">Skaner ma własny rysunek skanu %s i wyśle go, aby można było wybrać</string>
+    <string name="device_scanner_drawing_refused">Skaner nie przyjął rysunku skanu %1$s (%2$s)</string>
     <string name="device_scanner_frame_dropped">Odrzucono nieczytelną wiadomość ze skanera (%s)</string>
     <string name="device_scanner_error">Błąd połączenia ze skanerem (%s)</string>
     <string name="device_scanner_conflict_title">Rysunek ze skanera</string>

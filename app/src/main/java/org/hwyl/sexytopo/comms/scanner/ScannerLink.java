@@ -2,7 +2,9 @@ package org.hwyl.sexytopo.comms.scanner;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.hwyl.sexytopo.R;
 import org.hwyl.sexytopo.model.survey.Survey;
 import org.json.JSONException;
@@ -10,8 +12,8 @@ import org.json.JSONObject;
 
 /**
  * SexyTopo's side of the conversation with a cross-section scanner (CrossSectionScanner
- * docs/LINK.md), whatever connection it comes over. Everything here runs on the main thread, as it
- * changes the survey.
+ * docs/LINK.md), whatever connection it comes over. Sections come from the scanner, and drawings
+ * edited here go back to it. Everything here runs on the main thread, as it changes the survey.
  */
 public class ScannerLink {
 
@@ -59,6 +61,8 @@ public class ScannerLink {
     private final ScannerFrames.Reader reader = new ScannerFrames.Reader();
     private final StationWatcher watcher = new StationWatcher();
     private final List<Conflict> conflicts = new ArrayList<>();
+    // drawings sent and waiting for the scanner's reply, by scan name
+    private final Map<String, ScannerSession.Outgoing> drawingsSent = new HashMap<>();
 
     private ScannerConnection connection = null;
     private boolean ready = false;
@@ -75,6 +79,7 @@ public class ScannerLink {
         this.connection = connection;
         ready = false;
         reader.clear();
+        drawingsSent.clear();
         send(() -> ScannerMessages.hello(host.getAppVersion()));
         host.onStatusChanged();
     }
@@ -87,6 +92,7 @@ public class ScannerLink {
         connection = null;
         ready = false;
         reader.clear();
+        drawingsSent.clear();
         host.onStatusChanged();
     }
 
@@ -106,7 +112,10 @@ public class ScannerLink {
         }
     }
 
-    /** Called whenever the survey changes, to keep the scanner's stations up to date. */
+    /**
+     * Called whenever the survey changes, to keep the scanner's stations up to date and send it any
+     * drawing edited here.
+     */
     public void onSurveyUpdated() {
         if (!ready) {
             return;
@@ -118,6 +127,44 @@ public class ScannerLink {
         } catch (JSONException e) {
             host.log(R.string.device_scanner_error, e.getMessage());
         }
+        sendChangedDrawings();
+    }
+
+    /**
+     * Sends each drawing that differs from the one agreed with the scanner, unless one is already
+     * on its way or the user hasn't yet said which drawing to keep.
+     */
+    private void sendChangedDrawings() {
+        try {
+            for (ScannerSession.Outgoing drawing : newSession().changedDrawings()) {
+                if (drawingsSent.containsKey(drawing.scanName) || hasConflict(drawing.scanName)) {
+                    continue;
+                }
+                drawingsSent.put(drawing.scanName, drawing);
+                send(
+                        () ->
+                                ScannerMessages.drawing(
+                                        drawing.scanName,
+                                        drawing.revision,
+                                        drawing.basedOn,
+                                        drawing.drawing));
+            }
+        } catch (JSONException e) {
+            host.log(R.string.device_scanner_error, e.getMessage());
+        }
+    }
+
+    private boolean hasConflict(String scanName) {
+        for (Conflict conflict : conflicts) {
+            if (conflict.scanName.equals(scanName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private ScannerSession newSession() {
+        return new ScannerSession(host.getSurvey(), host.isVerticalSectionOnElevation());
     }
 
     private void handle(JSONObject message) {
@@ -126,6 +173,8 @@ public class ScannerLink {
             onHello(message);
         } else if (ScannerMessages.SECTION.equals(type)) {
             onSection(message);
+        } else if (ScannerMessages.DRAWING_REPLY.equals(type)) {
+            onDrawingReply(message);
         }
         // anything else is from a later protocol, so ignored
     }
@@ -144,7 +193,40 @@ public class ScannerLink {
         ready = true;
         host.log(R.string.device_scanner_hello, board, firmware);
         send(() -> watcher.start(host.getSurvey()));
+        sendChangedDrawings();
         host.onStatusChanged();
+    }
+
+    /**
+     * The scanner took a drawing sent from here, so it becomes the agreed one. A clash means the
+     * scanner has its own drawing, which it then sends, so the user is asked then.
+     */
+    private void onDrawingReply(JSONObject message) {
+        String scan = message.optString(ScannerMessages.SCAN_TAG);
+        ScannerSession.Outgoing sent = drawingsSent.get(scan);
+        if (sent == null || sent.revision != message.optInt(ScannerMessages.REVISION_TAG, -1)) {
+            return;
+        }
+        drawingsSent.remove(scan);
+        String result = message.optString(ScannerMessages.RESULT_TAG);
+        try {
+            if (ScannerSession.OK.equals(result)) {
+                newSession().agreed(scan, sent.revision, sent.hash);
+                host.log(R.string.device_scanner_drawing_taken, scan);
+                host.onSurveyChanged();
+            } else if (ScannerSession.CONFLICT.equals(result)) {
+                host.log(R.string.device_scanner_drawing_clash, scan);
+            } else {
+                // the scanner can't take it (its scan deleted), so stop sending it
+                newSession().agreed(scan, sent.revision, sent.hash);
+                host.log(
+                        R.string.device_scanner_drawing_refused,
+                        scan,
+                        message.optString(ScannerMessages.REASON_TAG));
+            }
+        } catch (JSONException e) {
+            host.log(R.string.device_scanner_error, e.getMessage());
+        }
     }
 
     private void onSection(JSONObject message) {
@@ -152,9 +234,7 @@ public class ScannerLink {
             return;
         }
         try {
-            ScannerSession.Outcome outcome =
-                    new ScannerSession(host.getSurvey(), host.isVerticalSectionOnElevation())
-                            .onSection(message);
+            ScannerSession.Outcome outcome = newSession().onSection(message);
             JSONObject reply = outcome.reply;
             send(() -> reply);
             String scan = reply.optString(ScannerMessages.SCAN_TAG);
@@ -186,20 +266,28 @@ public class ScannerLink {
     }
 
     /**
-     * Settles a conflict. Using the scanner's drawing puts it in the section and tells the scanner,
-     * if still connected; keeping SexyTopo's leaves the scan as a conflict on the scanner.
+     * Settles a conflict. Using the scanner's drawing puts it in the section and tells the scanner.
+     * Keeping SexyTopo's sends SexyTopo's drawing to the scanner, based on the scanner's clashing
+     * revision, now or on the next connection.
      */
     public void resolve(Conflict conflict, boolean useScanners) {
         // two screens may have asked, so only the first answer counts
-        if (!conflicts.remove(conflict) || !useScanners) {
+        if (!conflicts.remove(conflict)) {
             return;
         }
         try {
-            JSONObject reply = conflict.outcome.takeScannersDrawing();
-            send(() -> reply);
-            lastSection = conflict.scanName;
+            if (useScanners) {
+                JSONObject reply = conflict.outcome.takeScannersDrawing();
+                send(() -> reply);
+                lastSection = conflict.scanName;
+            } else {
+                conflict.outcome.keepSexyToposDrawing();
+            }
             host.onSurveyChanged();
             host.onStatusChanged();
+            if (ready) {
+                sendChangedDrawings();
+            }
         } catch (JSONException e) {
             host.log(R.string.device_scanner_error, e.getMessage());
         }

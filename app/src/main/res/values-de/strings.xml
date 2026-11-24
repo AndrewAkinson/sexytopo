@@ -389,6 +389,9 @@
     <string name="device_scanner_section_taken">Scan %1$s an Station %2$s übernommen</string>
     <string name="device_scanner_section_conflict">Die Zeichnung von Scan %1$s an Station %2$s wurde hier inzwischen geändert, daher wird gefragt, welche behalten werden soll</string>
     <string name="device_scanner_section_refused">Scan %1$s nicht übernommen (%2$s)</string>
+    <string name="device_scanner_drawing_taken">Der Scanner hat die Zeichnung für Scan %s übernommen</string>
+    <string name="device_scanner_drawing_clash">Der Scanner hat eine eigene Zeichnung für Scan %s und sendet sie, damit du wählen kannst</string>
+    <string name="device_scanner_drawing_refused">Der Scanner hat die Zeichnung für Scan %1$s nicht übernommen (%2$s)</string>
     <string name="device_scanner_frame_dropped">Unlesbare Nachricht vom Scanner verworfen (%s)</string>
     <string name="device_scanner_error">Fehler der Scanner-Verbindung (%s)</string>
     <string name="device_scanner_conflict_title">Scanner-Zeichnung</string>

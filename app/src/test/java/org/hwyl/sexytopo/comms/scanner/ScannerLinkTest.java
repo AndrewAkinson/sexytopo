@@ -143,7 +143,42 @@ public class ScannerLinkTest {
 
     private void connectAndGreet() throws Exception {
         link.onConnected(connection);
-        receive(hello(1));
+        receive(hello(ScannerMessages.PROTOCOL));
+    }
+
+    /** Edits the drawing at station 2 here, as the cross-section editor does. */
+    private void editHere(int x) throws Exception {
+        host.survey
+                .getPlanSketch()
+                .getCrossSectionDetail(host.survey.getStationByName("2"))
+                .setSketch(
+                        SketchJsonTranslater.toSubSketch(
+                                section("b1", "2", x, 0)
+                                        .getJSONObject("sketch")
+                                        .getJSONObject("sketch")));
+    }
+
+    private int agreedRevision() {
+        return host.survey.getScans().get(host.survey.getStationByName("2")).getReceived().revision;
+    }
+
+    private List<JSONObject> sentOfType(String type) {
+        List<JSONObject> found = new ArrayList<>();
+        for (JSONObject message : connection.sent) {
+            if (message.optString("type").equals(type)) {
+                found.add(message);
+            }
+        }
+        return found;
+    }
+
+    private static JSONObject drawingReply(String scan, int revision, String result)
+            throws Exception {
+        return new JSONObject()
+                .put("type", "drawing_reply")
+                .put("scan", scan)
+                .put("revision", revision)
+                .put("result", result);
     }
 
     @Test
@@ -153,7 +188,7 @@ public class ScannerLinkTest {
         Assert.assertEquals("SexyTopo 1.15.0", connection.last().getString("app"));
         Assert.assertFalse(link.isReady());
 
-        receive(hello(1));
+        receive(hello(ScannerMessages.PROTOCOL));
         Assert.assertEquals(List.of("hello", "survey"), connection.types());
         Assert.assertTrue(link.isReady());
         Assert.assertEquals("0.4", link.getFirmware());
@@ -163,7 +198,7 @@ public class ScannerLinkTest {
     @Test
     public void testOtherProtocolDisconnects() throws Exception {
         link.onConnected(connection);
-        receive(hello(2));
+        receive(hello(ScannerMessages.PROTOCOL - 1));
         Assert.assertFalse(connection.isConnected());
         Assert.assertFalse(link.isReady());
         Assert.assertEquals(List.of("hello"), connection.types());
@@ -190,37 +225,84 @@ public class ScannerLinkTest {
 
     @Test
     public void testConflictResolvedEitherWay() throws Exception {
-        // whether the user takes the scanner's drawing, then the replies sent after the conflict
+        // whether the user takes the scanner's drawing, then what is sent after the conflict,
+        // and the revision then agreed
         Object[][] cases = {
-            {true, List.of("ok")},
-            {false, List.of()},
+            {true, List.of("reply ok"), 3},
+            {false, List.of("drawing 4 based on 3"), 3},
         };
         for (Object[] c : cases) {
             setUp();
             connectAndGreet();
             receive(section("b1", "2", 1, 0));
-            host.survey
-                    .getPlanSketch()
-                    .getCrossSectionDetail(host.survey.getStationByName("2"))
-                    .setSketch(
-                            SketchJsonTranslater.toSubSketch(
-                                    section("b1", "2", 9, 0)
-                                            .getJSONObject("sketch")
-                                            .getJSONObject("sketch")));
-            receive(section("b1", "2", 2, 1));
+            editHere(9);
+            receive(section("b1", "2", 3, 1));
             Assert.assertEquals("conflict", connection.last().getString("result"));
             Assert.assertEquals(1, host.conflicts.size());
             Assert.assertEquals("2", host.conflicts.get(0).stationName);
+            // nothing is sent here while the user hasn't chosen
+            link.onSurveyUpdated();
+            Assert.assertTrue(sentOfType("drawing").isEmpty());
 
             int sentBefore = connection.sent.size();
             link.resolve(host.conflicts.get(0), (boolean) c[0]);
-            List<String> results = new ArrayList<>();
+            List<String> sent = new ArrayList<>();
             for (JSONObject message : connection.sent.subList(sentBefore, connection.sent.size())) {
-                results.add(message.getString("result"));
+                sent.add(
+                        message.getString("type").equals("drawing")
+                                ? "drawing "
+                                        + message.getInt("revision")
+                                        + " based on "
+                                        + message.getInt("based_on")
+                                : "reply " + message.getString("result"));
             }
-            Assert.assertEquals("use scanner's " + c[0], c[1], results);
-            Assert.assertTrue(link.getConflicts().isEmpty());
+            String what = "use scanner's " + c[0];
+            Assert.assertEquals(what, c[1], sent);
+            Assert.assertEquals(what, c[2], agreedRevision());
+            Assert.assertTrue(what, link.getConflicts().isEmpty());
         }
+    }
+
+    @Test
+    public void testDrawingEditedHereSent() throws Exception {
+        // edited here, the scanner's reply, drawings sent in all, revision then agreed
+        Object[][] cases = {
+            {false, null, 0, 1},
+            {true, "ok", 1, 2},
+            {true, "conflict", 1, 1},
+        };
+        for (Object[] c : cases) {
+            setUp();
+            connectAndGreet();
+            receive(section("b1", "2", 1, 0));
+            if ((boolean) c[0]) {
+                editHere(9);
+            }
+            link.onSurveyUpdated();
+            link.onSurveyUpdated(); // not sent twice while waiting for the reply
+            if (c[1] != null) {
+                JSONObject drawing = sentOfType("drawing").get(0);
+                Assert.assertEquals(2, drawing.getInt("revision"));
+                Assert.assertEquals(1, drawing.getInt("based_on"));
+                Assert.assertEquals(
+                        "XScan sketch 1", drawing.getJSONObject("sketch").getString("format"));
+                receive(drawingReply("b1", 2, (String) c[1]));
+            }
+            String what = "edited " + c[0] + ", reply " + c[1];
+            Assert.assertEquals(what, c[2], sentOfType("drawing").size());
+            Assert.assertEquals(what, c[3], agreedRevision());
+        }
+    }
+
+    @Test
+    public void testDrawingEditedWhileApartSentOnConnecting() throws Exception {
+        connectAndGreet();
+        receive(section("b1", "2", 1, 0));
+        link.onDisconnected(connection);
+        editHere(9);
+        connection = new PretendConnection();
+        connectAndGreet();
+        Assert.assertEquals(List.of("hello", "survey", "drawing"), connection.types());
     }
 
     @Test
@@ -261,7 +343,7 @@ public class ScannerLinkTest {
         link.onSurveyUpdated();
         Assert.assertEquals(List.of("hello"), connection.types());
 
-        receive(hello(1));
+        receive(hello(ScannerMessages.PROTOCOL));
         SurveyUpdater.renameStation(host.survey, host.survey.getStationByName("3"), "3a");
         link.onSurveyUpdated();
         Assert.assertEquals(List.of("hello", "survey", "station_renamed"), connection.types());
